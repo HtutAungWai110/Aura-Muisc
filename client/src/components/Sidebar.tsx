@@ -1,5 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { useUser } from "@/states/userState";
+import CreatePlaylistBtn from "./CreatePlaylistBtn";
 
 interface NavItemProps {
   icon: string;
@@ -57,7 +58,7 @@ const Sidebar = () => {
   return (
     <aside className="fixed inset-y-0 left-0 z-50 flex flex-col h-full w-80 rounded-r-lg bg-surface-container/90 backdrop-blur-2xl shadow-2xl overflow-hidden">
       {/* Profile Section */}
-      <div className="flex flex-col p-8 pt-10 border-b border-white/5">
+      <div className="flex flex-col p-8 border-b border-white/5">
         <div className="flex items-center gap-4 mb-4">
           <div className="relative group">
             <div className="absolute -inset-1 from-primary to-secondary rounded-full blur opacity-40 group-hover:opacity-70 transition duration-300"></div>
@@ -76,13 +77,17 @@ const Sidebar = () => {
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-2 mt-2 bg-white/5 rounded-full px-4 py-2 w-fit">
+        <div className="flex items-center gap-2 mt-2 bg-white/5 rounded-full p-2 w-full justify-center">
           <span className="material-symbols-outlined text-primary text-[18px]">
             library_music
           </span>
           <span className="text-body-sm font-body-sm text-on-surface-variant">
             1.2k Tracks
           </span>
+        </div>
+
+        <div className="mt-5 mb-5">
+          <CreatePlaylistBtn />
         </div>
       </div>
 

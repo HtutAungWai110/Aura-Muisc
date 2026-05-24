@@ -11,7 +11,6 @@ const User = mongoose.model(
     provider: { type: String, required: true }, // e.g., 'google', 'github'
     providerId: { type: String, required: true, unique: true }, // The immutable ID from Google/GitHub
     createdAt: { type: Date, default: Date.now },
-    playlist: { type: Array, default: [] },
   }),
 );
 

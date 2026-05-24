@@ -1,21 +1,33 @@
-import CreatePlaylistBtn from "@/components/CreatePlaylistBtn";
+import ImportTrackBtn from "@/components/ImportTrackBtn";
 
-const Library = () => (
-  <main className="ml-80 min-h-screen p-container-padding-desktop flex flex-col items-center justify-center relative overflow-hidden">
-    <div className="absolute top-0 left-0 w-full h-full -z-10 bg-surface">
-      <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px]"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-secondary-container/20 rounded-full blur-[100px]"></div>
-    </div>
-    <section className="max-w-4xl w-full">
-      <div className="mb-12">
-        <h1 className="font-headline-xl text-headline-xl text-on-surface mb-2">
-          Sonic Immersion
-        </h1>
-        <p className="text-on-surface-variant font-body-lg">
-          Select a track from your library to begin the experience.
-        </p>
+import ErrorMessage from "@/components/ErrorMessage";
+import TrackPreviewWrapper from "@/components/TrackPreviewsWrapper";
+import { useTrackImportsState } from "@/states/TrackImportsState";
+
+export default function Library() {
+  const { previewTracks } = useTrackImportsState();
+  return (
+    <main className="ml-80 min-h-screen p-container-padding-desktop flex flex-col items-center justify-center relative overflow-hidden">
+      <div className="absolute top-0 left-0 w-full h-full -z-10 bg-surface">
+        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px]"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-secondary-container/20 rounded-full blur-[100px]"></div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+      <section className="max-w-4xl w-full">
+        <div className="mb-5">
+          <h1 className="font-headline-xl text-headline-xl text-on-surface mb-2">
+            Sonic Immersion
+          </h1>
+          <p className="text-on-surface-variant font-body-lg">
+            Select a track from your library to begin the experience.
+          </p>
+        </div>
+
+        <div className="w-full">
+          <ImportTrackBtn />
+          {previewTracks && <TrackPreviewWrapper />}
+        </div>
+        {/*<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2 relative h-[400px] rounded-lg overflow-hidden group">
           <img
             alt="Electric Beats"
@@ -63,13 +75,9 @@ const Library = () => (
             </div>
           </div>
         </div>
-
-        <div>
-          <CreatePlaylistBtn />
-        </div>
-      </div>
-    </section>
-  </main>
-);
-
-export default Library;
+      </div>*/}
+      </section>
+      <ErrorMessage />
+    </main>
+  );
+}

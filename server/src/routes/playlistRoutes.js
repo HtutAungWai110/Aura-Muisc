@@ -1,11 +1,9 @@
-import User from "../models/user.js";
 import authMiddleware from "../middleware/middleware.js";
+import { createPlaylist } from "../controllers/playlistControllers.js";
 import express from "express";
 
 const router = express.Router();
 
-router.post("/create", authMiddleware, (req, res) => {
-  return res.json({ message: "Playlist created", id: req.userId });
-});
+router.post("/create", authMiddleware, createPlaylist);
 
 export default router;
