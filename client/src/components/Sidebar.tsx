@@ -63,7 +63,7 @@ const Sidebar = () => {
           <div className="relative group">
             <div className="absolute -inset-1 from-primary to-secondary rounded-full blur opacity-40 group-hover:opacity-70 transition duration-300"></div>
             <img
-              src={avatar}
+              src=""
               alt={displayName}
               className="relative w-16 h-16 rounded-full object-cover border-2 border-surface-container"
             />

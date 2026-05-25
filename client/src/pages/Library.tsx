@@ -1,6 +1,7 @@
 import ImportTrackBtn from "@/components/ImportTrackBtn";
 
 import ErrorMessage from "@/components/ErrorMessage";
+import SuccessMessage from "@/components/SuccessMessage";
 import TrackPreviewWrapper from "@/components/TrackPreviewsWrapper";
 import { useTrackImportsState } from "@/states/TrackImportsState";
 
@@ -78,6 +79,7 @@ export default function Library() {
       </div>*/}
       </section>
       <ErrorMessage />
+      <SuccessMessage />
     </main>
   );
 }

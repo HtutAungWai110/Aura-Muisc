@@ -4,13 +4,7 @@ import { useEffect } from "react";
 import { useTrackImportsState } from "@/states/TrackImportsState";
 
 export default function ImportTrackBtn() {
-  const { audioTracks, setAudioTracks, previewTracks } = useTrackImportsState();
-
-  useEffect(() => {
-    if (audioTracks) {
-      console.log("Audio:", audioTracks);
-    }
-  }, [audioTracks]);
+  const { setAudioTracks, previewTracks } = useTrackImportsState();
 
   useEffect(() => {
     if (previewTracks) {

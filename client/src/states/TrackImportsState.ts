@@ -12,7 +12,6 @@ export type TrackPreview = {
 };
 
 interface AudioStore {
-  audioTracks: FileList | null;
   previewTracks: TrackPreview[] | null;
   setAudioTracks: (e: React.ChangeEvent<HTMLInputElement>) => void;
   clearAudioTracks: () => void;
@@ -20,11 +19,9 @@ interface AudioStore {
 }
 
 export const useTrackImportsState = create<AudioStore>((set, get) => ({
-  audioTracks: null,
   previewTracks: null,
   setAudioTracks: (e) => {
-    set({ audioTracks: e.target.files });
-    const tracks = get().audioTracks;
+    const tracks = e.target.files;
     if (tracks.length > 0) {
       const fileArray = Array.from(tracks);
 
@@ -35,7 +32,7 @@ export const useTrackImportsState = create<AudioStore>((set, get) => ({
 
           // Attempt to extract embedded ID3 tags (artist, title, thumbnail)
           jsmediatags.read(file, {
-            onSuccess: (tag: any) => {
+            onSuccess: (tag) => {
               const { title, artist, picture } = tag.tags;
               let thumbnailUrl = null;
 
@@ -77,12 +74,19 @@ export const useTrackImportsState = create<AudioStore>((set, get) => ({
       });
 
       Promise.all(parsePromises).then((results) => {
-        set({ previewTracks: results });
+        const previews = get().previewTracks;
+        if (previews) {
+          set((state) => ({
+            previewTracks: [...state.previewTracks, ...results],
+          }));
+        } else {
+          set({ previewTracks: results });
+        }
       });
     }
   },
   clearAudioTracks: () => {
-    set({ audioTracks: null, previewTracks: null });
+    set({ previewTracks: null });
   },
   removeTrack: (id) => {
     const tracks = get().previewTracks;

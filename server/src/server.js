@@ -6,11 +6,20 @@ import session from "express-session";
 import passport from "passport";
 import authRoutes from "./routes/authRoutes.js";
 import playlistRoutes from "./routes/playlistRoutes.js";
+import trackRoutes from "./routes/trackRoutes.js";
 import MongoStore from "connect-mongo";
+import cors from "cors";
 config();
 const app = express();
+app.use(
+  cors({
+    origin: process.env.REACT_URL,
+    credentials: true,
+  }),
+);
 app.use(express.json());
 app.use(cookieParser());
+app.use("/uploads", express.static("uploads"));
 app.use(
   session({
     store: MongoStore.create({
@@ -37,6 +46,7 @@ app.get("/", (req, res) => {
 
 app.use("/auth", authRoutes);
 app.use("/playlist", playlistRoutes);
+app.use("/track", trackRoutes);
 
 connnectDB().then(() => {
   app.listen(process.env.PORT, () => {
