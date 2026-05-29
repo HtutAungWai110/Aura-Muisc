@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import axios from "axios";
 
 type UserSchema = {
   avatar: string;
@@ -23,13 +24,17 @@ export const useUser = create<UserState>((set) => ({
   isLoading: true,
   error: null,
   fetchUserData: async () => {
-    const res = await fetch("/api/auth/me");
-    if (!res.ok) {
-      const data = await res.json();
-      set({ isLoading: false, error: data.message });
-      return;
+    try {
+      const res = await axios.get("/api/user/me", { withCredentials: true });
+      const { user } = res.data;
+      set({ userData: user, isLoading: false });
+    } catch (e) {
+      if (e.response) {
+        set({
+          error: `Error: ${e.response.status}, ${e.response.data.message}`,
+          isLoading: false,
+        });
+      }
     }
-    const data = await res.json();
-    set({ isLoading: false, userData: data.user });
   },
 }));

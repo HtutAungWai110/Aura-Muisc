@@ -50,15 +50,6 @@ router.get(
   passport.authenticate("google", { scope: ["email", "profile"] }),
 );
 
-router.get("/me", (req, res) => {
-  // If the browser sent a valid session cookie, passport deserialized it and populated req.user
-  if (req.isAuthenticated()) {
-    res.json({ message: "Authenticated", user: req.user });
-  } else {
-    res.status(401).json({ message: "Not authenticated", user: null });
-  }
-});
-
 router.get(
   "/google/callback",
   passport.authenticate("google", {

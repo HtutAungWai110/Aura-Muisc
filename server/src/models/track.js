@@ -11,6 +11,9 @@ const Track = mongoose.model(
       ref: "User",
       required: true,
     },
+    thumbnailUrl: { type: String, default: null },
+    addedAt: { type: Date, default: Date.now },
+    duration: { type: Number, default: null },
   }),
 );
 

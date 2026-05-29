@@ -7,6 +7,7 @@ import passport from "passport";
 import authRoutes from "./routes/authRoutes.js";
 import playlistRoutes from "./routes/playlistRoutes.js";
 import trackRoutes from "./routes/trackRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
 import MongoStore from "connect-mongo";
 import cors from "cors";
 config();
@@ -47,6 +48,7 @@ app.get("/", (req, res) => {
 app.use("/auth", authRoutes);
 app.use("/playlist", playlistRoutes);
 app.use("/track", trackRoutes);
+app.use("/user", userRoutes);
 
 connnectDB().then(() => {
   app.listen(process.env.PORT, () => {

@@ -2,29 +2,26 @@ import { Button } from "./ui/button";
 import axios from "axios";
 import { useTrackImportsState } from "@/states/TrackImportsState";
 import { useMutation } from "@tanstack/react-query";
-import { useEffect } from "react";
 import { Spinner } from "./ui/spinner";
 import { useSuccessStore } from "@/states/SuccessState";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function UploadTracksBtn() {
   const { previewTracks, clearAudioTracks } = useTrackImportsState();
   const { setSuccessMessage } = useSuccessStore();
+  const queryClient = useQueryClient();
   const uploadMutation = useMutation({
     mutationFn: async () => {
       try {
         const formData = new FormData();
-        // 1. Loop and append each file using the field name your backend expects (e.g., "tracks")
+
         previewTracks.forEach((track) => {
-          formData.append("tracks", track.rawFile); // Using 'tracks' plural to match backend expectation
+          formData.append("tracks", track.rawFile);
         });
-        // 2. Pass formData directly as the body argument
-        const res = await axios.post(
-          "/api/track/add",
-          formData, // <-- Fix: DO NOT wrap this in { tracks: formData }
-          {
-            withCredentials: true,
-          },
-        );
+
+        const res = await axios.post("/api/track/add", formData, {
+          withCredentials: true,
+        });
         return res.data;
       } catch (error) {
         if (error.response) {
@@ -39,6 +36,7 @@ export default function UploadTracksBtn() {
     onSuccess: (data) => {
       setSuccessMessage(data.message);
       clearAudioTracks();
+      queryClient.invalidateQueries({ queryKey: ["Tracks"] });
     },
     onError: (error) => {
       console.error(error);

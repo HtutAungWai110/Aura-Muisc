@@ -6,10 +6,15 @@ import PublicRoute from "./lib/publicRoute";
 import { useUser } from "./states/userState";
 import { useEffect } from "react";
 function App() {
-  const { fetchUserData } = useUser();
+  const { userData, fetchUserData } = useUser();
   useEffect(() => {
     fetchUserData();
   }, [fetchUserData]);
+  useEffect(() => {
+    if (userData) {
+      console.log(userData);
+    }
+  }, [userData]);
   return (
     <BrowserRouter>
       <Routes>

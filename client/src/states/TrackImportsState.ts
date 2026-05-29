@@ -36,7 +36,6 @@ export const useTrackImportsState = create<AudioStore>((set, get) => ({
               const { title, artist, picture } = tag.tags;
               let thumbnailUrl = null;
 
-              // If an image exists inside the MP3 metadata, convert it to base64
               if (picture) {
                 const { data, type } = picture;
                 const base64String = data.reduce(
