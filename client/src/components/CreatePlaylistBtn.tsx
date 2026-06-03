@@ -1,8 +1,7 @@
-import axios from "axios";
+import apiClient from "@/lib/apiClient";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "./ui/button";
 import { PlusCircle } from "lucide-react";
-import { useErrorStore } from "@/states/ErrorState";
 import { useState } from "react";
 
 export default function CreatePlaylistBtn() {
@@ -17,34 +16,20 @@ export default function CreatePlaylistBtn() {
     setCreating(false);
     setPlaylistTitle("");
   }
-  const { setError } = useErrorStore();
   const createMutation = useMutation({
     mutationKey: ["playlisst"],
     mutationFn: async () => {
-      try {
-        const res = await axios.post(
-          "/api/playlist/create",
-          { playlistTitle },
-          {
-            withCredentials: true,
-          },
-        );
-        return res.data;
-      } catch (error) {
-        if (error.response) {
-          throw new Error(
-            `Status: ${error.response.status}, ${error.response.data.message}`,
-            { cause: error },
-          );
-        }
-        throw error;
-      }
+      const res = await apiClient.post(
+        "/api/playlist/create",
+        { playlistTitle },
+        {
+          withCredentials: true,
+        },
+      );
+      return res.data;
     },
     onSuccess: (data) => {
       console.log(data);
-    },
-    onError: (error) => {
-      setError(error.message);
     },
   });
 

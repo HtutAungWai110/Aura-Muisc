@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import axios from "axios";
+import apiClient from "../lib/apiClient";
 
 type UserSchema = {
   avatar: string;
@@ -25,16 +25,14 @@ export const useUser = create<UserState>((set) => ({
   error: null,
   fetchUserData: async () => {
     try {
-      const res = await axios.get("/api/user/me", { withCredentials: true });
-      const { user } = res.data;
+      const res = await apiClient.get("/api/user/me", {
+        withCredentials: true,
+      });
+      const { user } = res.data || null;
       set({ userData: user, isLoading: false });
     } catch (e) {
-      if (e.response) {
-        set({
-          error: `Error: ${e.response.status}, ${e.response.data.message}`,
-          isLoading: false,
-        });
-      }
+      // Error is already set by the interceptor in apiClient
+      set({ isLoading: false });
     }
   },
 }));

@@ -56,7 +56,7 @@ const Sidebar = () => {
   };
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-50 flex flex-col h-full w-80 rounded-r-lg bg-surface-container/90 backdrop-blur-2xl shadow-2xl overflow-hidden">
+    <aside className="fixed inset-y-0 left-0 z-50 flex flex-col h-full w-80 rounded-r-lg bg-surface-container/90 backdrop-blur-2xl shadow-2xl overflow-hidden pb-24">
       {/* Profile Section */}
       <div className="flex flex-col p-8 border-b border-white/5">
         <div className="flex items-center gap-4 mb-4">

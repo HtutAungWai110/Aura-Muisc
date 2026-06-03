@@ -1,6 +1,10 @@
 import express from "express";
 import authMiddleware from "../middleware/middleware.js";
-import { addTracks, getTracks } from "../controllers/trackControllers.js";
+import {
+  addTracks,
+  getTracks,
+  deleteTrack,
+} from "../controllers/trackControllers.js";
 import multer from "multer";
 import fs from "fs";
 
@@ -23,5 +27,6 @@ const upload = multer({ storage: storage });
 
 router.post("/add", authMiddleware, upload.array("tracks"), addTracks);
 router.get("/all", authMiddleware, getTracks);
+router.delete("/delete/:id", authMiddleware, deleteTrack);
 
 export default router;

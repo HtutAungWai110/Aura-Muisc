@@ -9,6 +9,7 @@ import playlistRoutes from "./routes/playlistRoutes.js";
 import trackRoutes from "./routes/trackRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import MongoStore from "connect-mongo";
+import globalErrorHandler from "./middleware/globalErrorHandler.js";
 import cors from "cors";
 config();
 const app = express();
@@ -49,6 +50,8 @@ app.use("/auth", authRoutes);
 app.use("/playlist", playlistRoutes);
 app.use("/track", trackRoutes);
 app.use("/user", userRoutes);
+
+app.use(globalErrorHandler);
 
 connnectDB().then(() => {
   app.listen(process.env.PORT, () => {
