@@ -3,10 +3,13 @@ import { useMutation } from "@tanstack/react-query";
 import { Button } from "./ui/button";
 import { PlusCircle } from "lucide-react";
 import { useState } from "react";
+import type { Playlist } from "@/types/PlaylistType";
+import { usePlaylistStore } from "@/states/PlaylistState";
 
 export default function CreatePlaylistBtn() {
   const [isCreating, setCreating] = useState<boolean>(false);
   const [playlistTitle, setPlaylistTitle] = useState<string>("");
+  const { addPlaylist } = usePlaylistStore();
 
   function handlePlaylistInputChange(e) {
     setPlaylistTitle(e.target.value);
@@ -18,7 +21,7 @@ export default function CreatePlaylistBtn() {
   }
   const createMutation = useMutation({
     mutationKey: ["playlisst"],
-    mutationFn: async () => {
+    mutationFn: async (): Promise<Playlist> => {
       const res = await apiClient.post(
         "/api/playlist/create",
         { playlistTitle },
@@ -29,7 +32,9 @@ export default function CreatePlaylistBtn() {
       return res.data;
     },
     onSuccess: (data) => {
-      console.log(data);
+      setPlaylistTitle("");
+      setCreating(false);
+      addPlaylist(data);
     },
   });
 

@@ -11,6 +11,7 @@ const Playlist = mongoose.model(
     },
     tracks: [{ type: mongoose.Schema.Types.ObjectId, ref: "Track" }],
     createdAt: { type: Date, default: Date.now() },
+    coverPhotoUrl: { type: String, default: null },
   }),
 );
 

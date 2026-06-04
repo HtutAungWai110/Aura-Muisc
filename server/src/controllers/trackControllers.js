@@ -39,26 +39,12 @@ async function addTracks(req, res, next) {
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized" });
     }
-
-    // Create thumbnail directory once
-    const thumbnailDir = path.join(
-      "uploads",
-      "tracks",
-      userId.toString(),
-      "thumbnail",
-    );
-    await fs.mkdir(thumbnailDir, { recursive: true });
-
-    // Process files concurrently
     const trackPromises = req.files.map(async (file, index) => {
       try {
         // Validate file exists
         if (!file.path) {
           throw new Error(`File path missing for file at index ${index}`);
         }
-
-        const metadata = await getTrackMetadata(file.path);
-        let thumbnailUrl = null;
 
         // Parse audio metadata for duration
         let duration = 0;
@@ -72,6 +58,16 @@ async function addTracks(req, res, next) {
             parseError,
           );
         }
+
+        const metadata = await getTrackMetadata(file.path);
+        let thumbnailUrl = null;
+
+        const thumbnailDir = path.join(
+          "uploads",
+          userId.toString(),
+          "thumbnail",
+        );
+        await fs.mkdir(thumbnailDir, { recursive: true });
 
         // Handle thumbnail extraction
         if (metadata.pictureData && metadata.pictureData.data) {
@@ -103,7 +99,7 @@ async function addTracks(req, res, next) {
             file.originalname.replace(/\.[^/.]+$/, "") ??
             "Unknown Title",
           artist: metadata.artist ?? "Unknown Artist",
-          fileUrl: file.path.split(path.sep).join("/"), // Normalize path separators
+          fileUrl: file.path.split(path.sep).join("/"),
           thumbnailUrl: thumbnailUrl,
           userId: userId,
           duration: duration,
@@ -126,7 +122,6 @@ async function addTracks(req, res, next) {
     });
   } catch (error) {
     console.error("Error in addTracks:", error);
-    // Don't expose internal error details to client
     next(new AppError("Failed to upload tracks. Please try again.", 500));
   }
 }

@@ -18,7 +18,6 @@ export default function AudioPlayer() {
     isPlaying,
     togglePlay,
     setIsPlaying,
-    queueIndex,
     nextTrack,
     prevTrack,
     volume,
@@ -120,15 +119,15 @@ export default function AudioPlayer() {
             <SkipBack className="size-6 fill-current" />
           </Button>
           <Button
-            variant="default"
+            variant="ghost"
             size="icon"
-            className="size-10 rounded-full bg-primary text-on-primary hover:scale-105 transition-transform"
+            className="size-10 rounded-full bg-white hover:scale-105 transition-transform"
             onClick={togglePlay}
           >
             {isPlaying ? (
-              <Pause className="size-6 fill-current" />
+              <Pause className="size-6 text-black/80 fill-black/80" />
             ) : (
-              <Play className="size-6 fill-current translate-x-0.5" />
+              <Play className="size-6 text-black/80 fill-black/80" />
             )}
           </Button>
           <Button

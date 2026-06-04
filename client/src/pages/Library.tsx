@@ -6,25 +6,22 @@ import TrackPreviewWrapper from "@/components/TrackPreviewsWrapper";
 import TracksWrapper from "@/components/TracksWrapper";
 import { useTrackImportsState } from "@/states/TrackImportsState";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import PlaylistsWrapper from "@/components/PlaylistsWrappers";
 
 export default function Library() {
   const { previewTracks } = useTrackImportsState();
   const { data, isLoading } = useQuery({
     queryKey: ["Tracks"],
     queryFn: async () => {
-      const res = await apiClient.get("/api/track/all", { withCredentials: true });
+      const res = await apiClient.get("/api/track/all", {
+        withCredentials: true,
+      });
       return res.data;
     },
     retryOnMount: false,
     retry: false,
   });
 
-  useEffect(() => {
-    if (data) {
-      console.log(data);
-    }
-  }, [data]);
   return (
     <main className="ml-80 min-h-screen p-container-padding-desktop flex flex-col items-center justify-start relative overflow-hidden pb-32">
       <div className="absolute top-0 left-0 w-full h-full -z-10 bg-surface">
@@ -42,23 +39,21 @@ export default function Library() {
           </p>
         </div>
 
-        <div className="w-full">
-          <div className="flex justify-between items-center mb-6">
-            <ImportTrackBtn />
-          </div>
-
-          {previewTracks && <TrackPreviewWrapper />}
-
-          {isLoading ? (
-            <div className="flex justify-center py-10">
-              <span className="text-on-surface-variant">
-                Loading library...
-              </span>
-            </div>
-          ) : (
-            data && <TracksWrapper tracks={data.tracks} />
-          )}
+        <div className="flex justify-between items-center mb-6">
+          <ImportTrackBtn />
         </div>
+
+        {previewTracks && <TrackPreviewWrapper />}
+
+        <PlaylistsWrapper />
+
+        {isLoading ? (
+          <div className="flex justify-center py-10">
+            <span className="text-on-surface-variant">Loading library...</span>
+          </div>
+        ) : (
+          data && <TracksWrapper tracks={data.tracks} />
+        )}
       </section>
       <ErrorMessage />
       <SuccessMessage />

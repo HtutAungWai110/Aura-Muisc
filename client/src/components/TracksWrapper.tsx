@@ -1,6 +1,6 @@
 import { Clock } from "lucide-react";
 import TrackTemplate from "./TrackTemplate";
-import type { Track } from "./TrackTemplate";
+import type { Track } from "@/types/TrackType";
 
 interface TracksWrapperProps {
   tracks: Track[];

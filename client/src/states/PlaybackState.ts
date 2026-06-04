@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { Track } from "@/components/TrackTemplate";
+import type { Track } from "@/types/TrackType";
 
 interface PlaybackState {
   currentTrack: Track | null;

@@ -2,15 +2,23 @@ import { Outlet, Navigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import { useUser } from "@/states/userState";
 import AudioPlayer from "../components/AudioPlayer";
+import { useEffect } from "react";
+import { usePlaylistStore } from "@/states/PlaylistState";
 
 export default function ProtectedRoute() {
   const { userData, isLoading } = useUser();
+  const { isPending: playlistLoading, fetchPlaylists } = usePlaylistStore();
 
-  if (!isLoading) {
+  useEffect(() => {
+    fetchPlaylists();
+  }, [fetchPlaylists]);
+
+  if (!isLoading && !playlistLoading) {
     return userData ? (
       <>
         <Sidebar />
         <Outlet />
+
         <AudioPlayer />
       </>
     ) : (

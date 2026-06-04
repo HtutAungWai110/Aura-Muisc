@@ -12,7 +12,7 @@ const router = express.Router();
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    const dir = `./uploads/tracks/${req.userId}/`;
+    const dir = `./uploads/${req.userId}/tracks`;
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }

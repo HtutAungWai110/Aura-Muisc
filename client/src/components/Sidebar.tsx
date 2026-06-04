@@ -32,7 +32,6 @@ const Sidebar = () => {
   const location = useLocation();
   const { userData } = useUser();
   const { displayName, email, avatar } = userData;
-  console.log(userData);
 
   const navLinks = [
     {
