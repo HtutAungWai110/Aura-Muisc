@@ -188,7 +188,7 @@ export default function TrackTemplate({
 
               {isSubMenuOpen && (
                 <PlaylistMenu
-                  trackId={track._id}
+                  track={track}
                   onClose={() => {
                     setIsOptionsOpen(false);
                     setIsSubMenuOpen(false);

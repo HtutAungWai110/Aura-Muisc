@@ -41,9 +41,9 @@ async function createPlaylist(req, res, next) {
 async function getAllPlaylists(req, res, next) {
   const userId = req.userId;
   try {
-    const playlists = await Playlist.find({ userId: userId }).populate(
-      "tracks",
-    );
+    const playlists = await Playlist.find({ userId: userId })
+      .populate("tracks")
+      .sort({ createdAt: -1 });
     return res.status(200).json(playlists);
   } catch (error) {
     console.error(

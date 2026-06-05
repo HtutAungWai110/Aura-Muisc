@@ -1,19 +1,23 @@
 import { usePlaylistStore } from "@/states/PlaylistState";
 import { useMutation } from "@tanstack/react-query";
 import apiClient from "@/lib/apiClient";
+import type { Track } from "@/types/TrackType";
+import { Check } from "lucide-react";
 
 interface PlaylistMenuProps {
-  trackId: string;
+  track: Track;
   onClose: () => void;
 }
 
-export default function PlaylistMenu({ trackId, onClose }: PlaylistMenuProps) {
-  const { fetchPlaylists, playlists } = usePlaylistStore();
+export default function PlaylistMenu({ track, onClose }: PlaylistMenuProps) {
+  const { trackExist, updatePlaylist, playlists } = usePlaylistStore();
 
   const addToPlaylistMutation = useMutation({
-    mutationFn: async (id) => {
+    mutationFn: async (id: string) => {
+      updatePlaylist(id, track);
+      console.log(playlists);
       const res = await apiClient.post(
-        `/api/playlist/${id}/add/${trackId}`,
+        `/api/playlist/${id}/add/${track._id}`,
         {},
         { withCredentials: true },
       );
@@ -36,16 +40,23 @@ export default function PlaylistMenu({ trackId, onClose }: PlaylistMenuProps) {
         playlists.map((p) => (
           <button
             key={p._id}
+            disabled={trackExist(p._id, track._id)}
             onClick={(e) => {
               e.stopPropagation();
               addToPlaylistMutation.mutate(p._id);
             }}
-            className="w-full px-4 py-2 text-left text-sm hover:bg-primary/20 flex items-center gap-2 transition-colors truncate"
+            className="w-full px-4 py-2 text-left text-sm hover:bg-primary/20 flex justify-between items-center gap-2 transition-colors truncate"
           >
-            <span className="material-symbols-outlined text-sm">
-              library_music
-            </span>
-            <span className="truncate">{p.title}</span>
+            <div className="flex items-center">
+              <span className="material-symbols-outlined text-sm">
+                library_music
+              </span>
+
+              <span className="truncate">{p.title}</span>
+            </div>
+            {trackExist(p._id, track._id) && (
+              <Check className="fill-green-500 p-1 rounded-2xl bg-green-500 opacity-90" />
+            )}
           </button>
         ))
       )}

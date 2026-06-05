@@ -4,6 +4,7 @@ import {
   addTracks,
   getTracks,
   deleteTrack,
+  getTracksCount,
 } from "../controllers/trackControllers.js";
 import multer from "multer";
 import fs from "fs";
@@ -27,6 +28,7 @@ const upload = multer({ storage: storage });
 
 router.post("/add", authMiddleware, upload.array("tracks"), addTracks);
 router.get("/all", authMiddleware, getTracks);
+router.get("/all/count", authMiddleware, getTracksCount);
 router.delete("/delete/:id", authMiddleware, deleteTrack);
 
 export default router;

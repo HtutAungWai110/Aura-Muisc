@@ -133,12 +133,8 @@ async function getTracks(req, res, next) {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const tracks = await Track.find({ userId: userId }).sort({ createdAt: -1 });
-    return res.status(200).json({
-      message: "Tracks fetched successfully",
-      count: tracks.length,
-      tracks,
-    });
+    const tracks = await Track.find({ userId: userId }).sort({ addedAt: -1 });
+    return res.json(tracks);
   } catch (error) {
     console.error("Error fetching tracks:", error);
     next(new AppError("Failed to fetch tracks. Please try again."), 500);
@@ -198,4 +194,15 @@ async function deleteTrack(req, res, next) {
   }
 }
 
-export { addTracks, getTracks, deleteTrack };
+async function getTracksCount(req, res, next) {
+  const userId = req.userId;
+  try {
+    const tracksCount = await Track.find({ userId: userId });
+    return res.json({ tracksCount: tracksCount.length });
+  } catch (error) {
+    console.error("Failed to get track counts:", error.message);
+    return next(new AppError("Failed to fetch track counts", 500));
+  }
+}
+
+export { addTracks, getTracks, deleteTrack, getTracksCount };

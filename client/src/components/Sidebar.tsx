@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { useUser } from "@/states/userState";
 import CreatePlaylistBtn from "./CreatePlaylistBtn";
+import { useTracksCountStore } from "@/states/TrackCountState";
 
 interface NavItemProps {
   icon: string;
@@ -32,6 +33,7 @@ const Sidebar = () => {
   const location = useLocation();
   const { userData } = useUser();
   const { displayName, email, avatar } = userData;
+  const { tracksCount } = useTracksCountStore();
 
   const navLinks = [
     {
@@ -81,7 +83,7 @@ const Sidebar = () => {
             library_music
           </span>
           <span className="text-body-sm font-body-sm text-on-surface-variant">
-            1.2k Tracks
+            {tracksCount} Tracks
           </span>
         </div>
 

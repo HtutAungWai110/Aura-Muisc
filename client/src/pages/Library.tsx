@@ -10,7 +10,7 @@ import PlaylistsWrapper from "@/components/PlaylistsWrappers";
 
 export default function Library() {
   const { previewTracks } = useTrackImportsState();
-  const { data, isLoading } = useQuery({
+  const { data: tracks, isLoading } = useQuery({
     queryKey: ["Tracks"],
     queryFn: async () => {
       const res = await apiClient.get("/api/track/all", {
@@ -52,7 +52,7 @@ export default function Library() {
             <span className="text-on-surface-variant">Loading library...</span>
           </div>
         ) : (
-          data && <TracksWrapper tracks={data.tracks} />
+          tracks && <TracksWrapper tracks={tracks} />
         )}
       </section>
       <ErrorMessage />
