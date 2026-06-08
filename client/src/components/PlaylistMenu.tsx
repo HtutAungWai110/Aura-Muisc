@@ -10,7 +10,8 @@ interface PlaylistMenuProps {
 }
 
 export default function PlaylistMenu({ track, onClose }: PlaylistMenuProps) {
-  const { trackExist, updatePlaylist, playlists } = usePlaylistStore();
+  const { trackExist, updatePlaylist, playlists, removeTrack } =
+    usePlaylistStore();
 
   const addToPlaylistMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -27,6 +28,9 @@ export default function PlaylistMenu({ track, onClose }: PlaylistMenuProps) {
     onSuccess: (data) => {
       console.log(data);
       onClose();
+    },
+    onError: (error, id) => {
+      removeTrack(id, track._id);
     },
   });
 

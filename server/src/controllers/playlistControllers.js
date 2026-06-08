@@ -1,10 +1,12 @@
 import Playlist from "../models/playlist.js";
 import AppError from "../lib/appError.js";
 import Track from "../models/track.js";
+import path from "path";
 
 async function createPlaylist(req, res, next) {
   try {
     const { playlistTitle } = req.body;
+    let title = playlistTitle;
 
     // Validate input
     if (!playlistTitle || playlistTitle.trim() === "") {
@@ -13,19 +15,17 @@ async function createPlaylist(req, res, next) {
       });
     }
 
-    const playlistExists = await Playlist.findOne({
+    const playlistExists = await Playlist.find({
       title: playlistTitle.trim(),
       userId: req.userId,
     });
 
-    if (playlistExists) {
-      return res.status(400).json({
-        message: "Playlist already exists with this title!",
-      });
+    if (playlistExists.length > 0) {
+      title = (title.trim() + playlistExists.length).toString();
     }
 
     const newPlaylist = new Playlist({
-      title: playlistTitle.trim(),
+      title: title,
       userId: req.userId,
     });
 
@@ -125,4 +125,27 @@ async function addTrackToPlaylist(req, res, next) {
   }
 }
 
-export { createPlaylist, getAllPlaylists, getPlaylist, addTrackToPlaylist };
+async function updateCoverPhoto(req, res, next) {
+  const { id } = req.params;
+  const userId = req.userId;
+  await Playlist.updateOne(
+    {
+      _id: id,
+      userId: userId,
+    },
+    {
+      $set: {
+        coverPhotoUrl: req.file.path.replace(/\\/g, "/"),
+      },
+    },
+  );
+  res.json({ message: "Cover photo set successfully" });
+}
+
+export {
+  createPlaylist,
+  getAllPlaylists,
+  getPlaylist,
+  addTrackToPlaylist,
+  updateCoverPhoto,
+};

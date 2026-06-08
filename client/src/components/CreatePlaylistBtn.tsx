@@ -5,11 +5,13 @@ import { PlusCircle } from "lucide-react";
 import { useState } from "react";
 import type { Playlist } from "@/types/PlaylistType";
 import { usePlaylistStore } from "@/states/PlaylistState";
+import { useSuccessStore } from "@/states/SuccessState";
 
 export default function CreatePlaylistBtn() {
   const [isCreating, setCreating] = useState<boolean>(false);
   const [playlistTitle, setPlaylistTitle] = useState<string>("");
   const { addPlaylist } = usePlaylistStore();
+  const { setSuccessMessage } = useSuccessStore();
 
   function handlePlaylistInputChange(e) {
     setPlaylistTitle(e.target.value);
@@ -32,6 +34,7 @@ export default function CreatePlaylistBtn() {
       return res.data;
     },
     onSuccess: (data) => {
+      setSuccessMessage(`Successfully created ${playlistTitle}`);
       setPlaylistTitle("");
       setCreating(false);
       addPlaylist(data);

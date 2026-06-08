@@ -12,6 +12,7 @@ interface PlaylistStore {
   addPlaylist: (payload: Playlist) => void;
   getPlaylist: (id: string) => Playlist;
   updatePlaylist: (id: string, payload: Track) => void;
+  removeTrack: (id: string, trackId: string) => void;
   trackExist: (id: string, trackId: string) => boolean;
 }
 
@@ -20,10 +21,14 @@ export const usePlaylistStore = create<PlaylistStore>((set, get) => ({
   isPending: true,
   error: null,
   fetchPlaylists: async () => {
-    const res = await apiClient.get("/api/playlist/all", {
-      withCredentials: true,
-    });
-    set({ playlists: res.data, isPending: false });
+    try {
+      const res = await apiClient.get("/api/playlist/all", {
+        withCredentials: true,
+      });
+      set({ playlists: res.data, isPending: false });
+    } catch (_) {
+      set({ isPending: false });
+    }
   },
   setPlaylists: (payload) => {
     set({ playlists: payload });
@@ -48,6 +53,20 @@ export const usePlaylistStore = create<PlaylistStore>((set, get) => ({
       }
       return p;
     });
+    set({ playlists: updatedPlaylists });
+  },
+  removeTrack: (id, trackId) => {
+    const { playlists } = get();
+    const updatedPlaylists = playlists.map((p: Playlist) => {
+      if (p._id === id) {
+        return {
+          ...p,
+          tracks: p.tracks.filter((t: Track) => t._id != trackId),
+        };
+      }
+      return p;
+    });
+
     set({ playlists: updatedPlaylists });
   },
   trackExist: (id, trackId) => {
