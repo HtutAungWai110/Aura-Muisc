@@ -1,6 +1,6 @@
-export default function validationMiddleware(schema) {
+export default function paramValidationMiddleware(schema) {
   return (req, res, next) => {
-    const result = schema.safeParse(req.body);
+    const result = schema.safeParse(req.params);
 
     if (!result.success) {
       return res.status(400).json({

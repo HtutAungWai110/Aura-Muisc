@@ -1,5 +1,5 @@
-import z, { string } from "zod";
+import z from "zod";
 
 export const playlistTitleSchema = z.object({
-  playlistTitle: string(),
+  playlistTitle: z.string().min(1, "Playlist title is required"),
 });

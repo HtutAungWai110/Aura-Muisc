@@ -36,7 +36,12 @@ export default function TrackTemplate({
     usePlaybackState();
   const isCurrent = currentTrack?._id === track._id;
 
-  const handlePlay = () => {
+  const handlePlay = (e: React.MouseEvent) => {
+    // If the click was on the options button or within the options menu, don't play
+    if ((e.target as HTMLElement).closest(".options-container")) {
+      return;
+    }
+
     if (isCurrent) {
       togglePlay();
     } else {
@@ -73,11 +78,11 @@ export default function TrackTemplate({
     }
 
     if (isOptionsOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("click", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("click", handleClickOutside);
     };
   }, [isOptionsOpen]);
 
@@ -143,20 +148,14 @@ export default function TrackTemplate({
       </div>
 
       <div
-        className="flex items-center justify-center relative"
+        className="flex items-center justify-center relative options-container"
         ref={optionsRef}
-        onMouseEnter={() => setIsOptionsOpen(true)}
-        onMouseLeave={() => {
-          setIsOptionsOpen(false);
-          setIsSubMenuOpen(false);
-        }}
       >
         <Button
           variant="ghost"
           size="icon"
           className="hover:bg-white/10 rounded-full"
-          onClick={(e) => {
-            e.stopPropagation();
+          onClick={() => {
             setIsOptionsOpen(!isOptionsOpen);
           }}
         >
@@ -198,7 +197,10 @@ export default function TrackTemplate({
             </div>
 
             <button
-              onClick={() => delteMutation.mutate()}
+              onClick={() => {
+                delteMutation.mutate();
+                setIsOptionsOpen(false);
+              }}
               className="w-full px-4 py-2 text-left text-sm hover:bg-white/5 flex items-center gap-2 text-error transition-colors"
             >
               <Trash2 className="size-3.5" />

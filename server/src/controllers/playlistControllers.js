@@ -8,20 +8,15 @@ async function createPlaylist(req, res, next) {
     const { playlistTitle } = req.body;
     let title = playlistTitle;
 
-    // Validate input
-    if (!playlistTitle || playlistTitle.trim() === "") {
-      return res.status(400).json({
-        message: "Playlist title is required",
-      });
-    }
-
-    const playlistExists = await Playlist.find({
+    const playlistExists = await Playlist.findOne({
       title: playlistTitle.trim(),
       userId: req.userId,
     });
 
-    if (playlistExists.length > 0) {
-      title = (title.trim() + playlistExists.length).toString();
+    if (playlistExists) {
+      playlistExists.existCount = playlistExists.existCount + 1;
+      title = (title + playlistExists.existCount).toString();
+      playlistExists.save();
     }
 
     const newPlaylist = new Playlist({
@@ -128,18 +123,24 @@ async function addTrackToPlaylist(req, res, next) {
 async function updateCoverPhoto(req, res, next) {
   const { id } = req.params;
   const userId = req.userId;
-  await Playlist.updateOne(
-    {
-      _id: id,
-      userId: userId,
-    },
-    {
-      $set: {
-        coverPhotoUrl: req.file.path.replace(/\\/g, "/"),
+  try {
+    const updatedPlaylist = await Playlist.findOneAndUpdate(
+      {
+        _id: id,
+        userId: userId,
       },
-    },
-  );
-  res.json({ message: "Cover photo set successfully" });
+      {
+        $set: {
+          coverPhotoUrl: req.file.path.replace(/\\/g, "/"),
+        },
+      },
+      { new: true, runValidators: true },
+    );
+    res.json({ message: "Cover photo set successfully", updatedPlaylist });
+  } catch (error) {
+    console.error("Failed to update cover photo", error.message);
+    next(new AppError("Failed to update cover photo. Try again later."), 500);
+  }
 }
 
 export {

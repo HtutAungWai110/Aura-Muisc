@@ -11,7 +11,8 @@ interface PlaylistStore {
   setPlaylists: (payload: Playlist[]) => void;
   addPlaylist: (payload: Playlist) => void;
   getPlaylist: (id: string) => Playlist;
-  updatePlaylist: (id: string, payload: Track) => void;
+  updatePlaylist: (id: string, payload: Playlist) => void;
+  addTrack: (id: string, payload: Track) => void;
   removeTrack: (id: string, trackId: string) => void;
   trackExist: (id: string, trackId: string) => boolean;
 }
@@ -37,12 +38,22 @@ export const usePlaylistStore = create<PlaylistStore>((set, get) => ({
     const { playlists } = get();
     set({ playlists: [payload, ...playlists] });
   },
+  updatePlaylist: (id, payload) => {
+    const { playlists } = get();
+    const updatedPlaylist = playlists.map((p: Playlist) => {
+      if (p._id === id) {
+        return payload;
+      }
+      return p;
+    });
+    set({ playlists: updatedPlaylist });
+  },
   getPlaylist: (id) => {
     const { playlists } = get();
     const target = playlists.find((item: Playlist) => item._id === id);
     return target;
   },
-  updatePlaylist: (id, payload) => {
+  addTrack: (id, payload) => {
     const { playlists } = get();
     const updatedPlaylists = playlists.map((p) => {
       if (p._id === id) {

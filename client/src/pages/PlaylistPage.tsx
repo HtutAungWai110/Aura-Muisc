@@ -25,7 +25,7 @@ import { base64ToFile } from "@/lib/convertImage";
 
 export default function PlaylistPage() {
   const { id } = useParams<{ id: string }>();
-  const { getPlaylist } = usePlaylistStore();
+  const { getPlaylist, updatePlaylist } = usePlaylistStore();
   const initialData = getPlaylist(id);
   const { setCurrentTrack, setTracks } = usePlaybackState();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -60,6 +60,9 @@ export default function PlaylistPage() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: [`Playlist ${id}`] });
+      const { updatedPlaylist } = data;
+      updatePlaylist(id, updatedPlaylist);
+
       setSelectedImage(null);
     },
   });
@@ -244,9 +247,15 @@ export default function PlaylistPage() {
         </div>
 
         {/* Tracks List */}
-        <div className="bg-surface-container/30 backdrop-blur-md rounded-2xl border border-white/5 p-2 mb-12">
-          <TracksWrapper tracks={playlistData.tracks} />
-        </div>
+        {playlistData.tracks.length > 0 ? (
+          <div className="bg-surface-container/30 backdrop-blur-md rounded-2xl border border-white/5 p-2 mb-12">
+            <TracksWrapper tracks={playlistData.tracks} />
+          </div>
+        ) : (
+          <div className="bg-primary/10 w-full h-50 rounded-2xl flex justify-center items-center opacity-60">
+            <h1>No tracks in the playlist yet!</h1>
+          </div>
+        )}
       </div>
     </div>
   );

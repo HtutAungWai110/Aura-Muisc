@@ -7,7 +7,14 @@ import {
   updateCoverPhoto,
 } from "../controllers/playlistControllers.js";
 import validationMiddleware from "../middleware/ValidationMiddleware.js";
+import paramValidationMiddleware from "../middleware/paramValidationMiddleware.js";
+import fileValidationMiddleware from "../middleware/fileValidationMiddleware.js";
 import { playlistTitleSchema } from "../validators/playlistValidator.js";
+import {
+  playlistIdSchema,
+  trackIdSchema,
+  playlistAndTrackIdSchema,
+} from "../validators/paramValidators.js";
 import express from "express";
 import fs from "fs";
 import multer from "multer";
@@ -37,12 +44,27 @@ router.post(
 );
 
 router.get("/all", authMiddleware, getAllPlaylists);
-router.get("/:id", authMiddleware, getPlaylist);
-router.post("/:id/add/:trackId", authMiddleware, addTrackToPlaylist);
+
+router.get(
+  "/:id",
+  authMiddleware,
+  paramValidationMiddleware(playlistIdSchema),
+  getPlaylist,
+);
+
+router.post(
+  "/:id/add/:trackId",
+  authMiddleware,
+  paramValidationMiddleware(playlistAndTrackIdSchema),
+  addTrackToPlaylist,
+);
+
 router.post(
   "/:id/cover",
   authMiddleware,
+  paramValidationMiddleware(playlistIdSchema),
   upload.single("cover"),
+  fileValidationMiddleware({ field: "cover" }),
   updateCoverPhoto,
 );
 
