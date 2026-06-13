@@ -7,9 +7,12 @@ import TracksWrapper from "@/components/TracksWrapper";
 import { useTrackImportsState } from "@/states/TrackImportsState";
 import { useQuery } from "@tanstack/react-query";
 import PlaylistsWrapper from "@/components/PlaylistsWrappers";
+import { usePlaybackState } from "@/states/PlaybackState";
+import { useEffect } from "react";
 
 export default function Library() {
   const { previewTracks } = useTrackImportsState();
+  const { setCurrentTrack, setTracks, mode } = usePlaybackState();
   const { data: tracks, isLoading } = useQuery({
     queryKey: ["Tracks"],
     queryFn: async () => {
@@ -21,6 +24,10 @@ export default function Library() {
     retryOnMount: false,
     retry: false,
   });
+
+  useEffect(() => {
+    console.log(mode);
+  }, [mode]);
 
   return (
     <main className="ml-80 min-h-screen p-container-padding-desktop flex flex-col items-center justify-start relative overflow-hidden pb-32">
@@ -52,7 +59,11 @@ export default function Library() {
             <span className="text-on-surface-variant">Loading library...</span>
           </div>
         ) : (
-          tracks && <TracksWrapper tracks={tracks} />
+          tracks && (
+            <>
+              <TracksWrapper tracks={tracks} />
+            </>
+          )
         )}
       </section>
       <ErrorMessage />

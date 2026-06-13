@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { usePlaybackState } from "@/states/PlaybackState";
+import { usePlaybackState, Mode } from "@/states/PlaybackState";
 import {
   Play,
   Pause,
@@ -7,6 +7,8 @@ import {
   SkipForward,
   Volume2,
   VolumeX,
+  Shuffle,
+  Repeat,
 } from "lucide-react";
 import { Slider } from "./ui/slider"; // Assuming there is a slider in ui/
 import { Button } from "./ui/button";
@@ -22,6 +24,8 @@ export default function AudioPlayer() {
     prevTrack,
     volume,
     setVolume,
+    mode,
+    setMode,
   } = usePlaybackState();
 
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -70,6 +74,26 @@ export default function AudioPlayer() {
     if (value[0] > 0) setIsMuted(false);
   };
 
+  const toggleLoop = () => {
+    setMode(mode === Mode.loop ? Mode.all : Mode.loop);
+  };
+
+  const toggleShuffle = () => {
+    if (mode === Mode.shuffle) {
+      setMode(Mode.all);
+    } else {
+      setMode(Mode.shuffle);
+    }
+  };
+
+  const playNext = () => {
+    if (mode === Mode.loop) {
+      setIsPlaying(true);
+    } else {
+      nextTrack();
+    }
+  };
+
   if (!currentTrack) return null;
 
   return (
@@ -79,7 +103,7 @@ export default function AudioPlayer() {
         src={`/api/${currentTrack.fileUrl}`}
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
-        onEnded={nextTrack}
+        onEnded={playNext}
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
       />
@@ -113,6 +137,16 @@ export default function AudioPlayer() {
           <Button
             variant="ghost"
             size="icon"
+            onClick={toggleShuffle}
+            className={`transition-colors ${
+              mode === Mode.shuffle ? "text-primary" : "hover:text-primary"
+            }`}
+          >
+            <Shuffle className="size-5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={prevTrack}
             className="hover:text-primary transition-colors"
           >
@@ -137,6 +171,16 @@ export default function AudioPlayer() {
             className="hover:text-primary transition-colors"
           >
             <SkipForward className="size-6 fill-current" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleLoop}
+            className={`transition-colors ${
+              mode === Mode.loop ? "text-primary" : "hover:text-primary"
+            }`}
+          >
+            <Repeat className="size-5" />
           </Button>
         </div>
 
