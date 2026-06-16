@@ -17,7 +17,7 @@ import type { Playlist } from "@/types/PlaylistType";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import { usePlaybackState } from "@/states/PlaybackState";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import PhotoCropper from "@/components/PhotoCropper";
 import { getCroppedImg } from "@/lib/cropImage";
 import type { Area } from "react-easy-crop";
@@ -33,6 +33,7 @@ export default function PlaylistPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
 
+  console.log(initialData);
   const {
     data: playlistData,
     isLoading,
@@ -43,11 +44,19 @@ export default function PlaylistPage() {
       const res = await apiClient.get(`/api/playlist/${id}`, {
         withCredentials: true,
       });
+
       return res.data;
     },
     retry: false,
+    refetchOnMount: true,
     initialData: initialData,
   });
+
+  useEffect(() => {
+    if (playlistData) {
+      console.log(playlistData);
+    }
+  }, [playlistData]);
 
   const uploadCoverMutation = useMutation({
     mutationFn: async (formData: FormData) => {
@@ -249,7 +258,7 @@ export default function PlaylistPage() {
         {/* Tracks List */}
         {playlistData.tracks.length > 0 ? (
           <div className="bg-surface-container/30 backdrop-blur-md rounded-2xl border border-white/5 p-2 mb-12">
-            <TracksWrapper tracks={playlistData.tracks} />
+            <TracksWrapper tracks={playlistData.tracks} playlistId={id} />
           </div>
         ) : (
           <div className="bg-primary/10 w-full h-50 rounded-2xl flex justify-center items-center opacity-60">

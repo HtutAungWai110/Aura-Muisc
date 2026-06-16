@@ -42,6 +42,7 @@ export default function UploadTracksBtn() {
     },
     onError: (error) => {
       console.error(error.message);
+      setError(error.message);
     },
   });
   return (

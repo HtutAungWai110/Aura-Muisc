@@ -5,6 +5,8 @@ import AudioPlayer from "../components/AudioPlayer";
 import { useEffect } from "react";
 import { usePlaylistStore } from "@/states/PlaylistState";
 import { useTracksCountStore } from "@/states/TrackCountState";
+import ErrorMessage from "../components/ErrorMessage";
+import SuccessMessage from "../components/SuccessMessage";
 
 export default function ProtectedRoute() {
   const { userData, isLoading } = useUser();
@@ -26,6 +28,8 @@ export default function ProtectedRoute() {
         <Outlet />
 
         <AudioPlayer />
+        <ErrorMessage />
+        <SuccessMessage />
       </>
     ) : (
       <Navigate to={"/login"} />

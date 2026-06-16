@@ -66,8 +66,6 @@ export default function Library() {
           )
         )}
       </section>
-      <ErrorMessage />
-      <SuccessMessage />
     </main>
   );
 }

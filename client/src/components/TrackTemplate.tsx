@@ -13,6 +13,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import apiClient from "@/lib/apiClient";
 import { usePlaybackState } from "@/states/PlaybackState";
 import PlaylistMenu from "./PlaylistMenu";
+import { memo } from "react";
 
 import type { Track } from "@/types/TrackType";
 
@@ -20,13 +21,15 @@ interface TrackTemplateProps {
   track: Track;
   index: number;
   allTracks?: Track[];
+  playlistId?: string;
 }
 
-export default function TrackTemplate({
+const TrackTemplate = ({
   track,
   index,
   allTracks,
-}: TrackTemplateProps) {
+  playlistId = null,
+}: TrackTemplateProps) => {
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
   const [isSubMenuOpen, setIsSubMenuOpen] = useState(false);
   const queryClient = useQueryClient();
@@ -54,7 +57,10 @@ export default function TrackTemplate({
 
   const delteMutation = useMutation({
     mutationFn: async () => {
-      const res = await apiClient.delete(`/api/track/delete/${track._id}`, {
+      const url = playlistId
+        ? `/api/playlist/${playlistId}/track/${track._id}/remove`
+        : `/api/track/delete/${track._id}`;
+      const res = await apiClient.delete(url, {
         withCredentials: true,
       });
 
@@ -63,6 +69,9 @@ export default function TrackTemplate({
     onSuccess: (data) => {
       console.log(data);
       queryClient.invalidateQueries({ queryKey: ["Tracks"] });
+      if (playlistId) {
+        queryClient.invalidateQueries({ queryKey: [`Playlist ${playlistId}`] });
+      }
     },
   });
 
@@ -211,4 +220,6 @@ export default function TrackTemplate({
       </div>
     </div>
   );
-}
+};
+
+export default memo(TrackTemplate);

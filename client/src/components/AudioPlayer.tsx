@@ -13,6 +13,7 @@ import {
 import { Slider } from "./ui/slider"; // Assuming there is a slider in ui/
 import { Button } from "./ui/button";
 import { formatDuration } from "@/lib/utils";
+import { useCallback } from "react";
 
 export default function AudioPlayer() {
   const {
@@ -26,6 +27,8 @@ export default function AudioPlayer() {
     setVolume,
     mode,
     setMode,
+    setLooping,
+    isLooping,
   } = usePlaybackState();
 
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -44,55 +47,122 @@ export default function AudioPlayer() {
     }
   }, [isPlaying, currentTrack]);
 
+  const handleShortcut = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === "ArrowRight") {
+        nextTrack();
+      }
+      if (e.ctrlKey && e.key === "ArrowLeft") {
+        prevTrack();
+      }
+      if (e.key === " ") {
+        togglePlay();
+      }
+
+      // New shortcuts
+      if (e.shiftKey && e.key === "ArrowRight") {
+        e.preventDefault();
+        if (audioRef.current) {
+          const newTime = Math.min(
+            audioRef.current.currentTime + 5,
+            audioRef.current.duration,
+          );
+          audioRef.current.currentTime = newTime;
+          setCurrentTime(newTime);
+        }
+      }
+      if (e.shiftKey && e.key === "ArrowLeft") {
+        e.preventDefault();
+        if (audioRef.current) {
+          const newTime = Math.max(audioRef.current.currentTime - 5, 0);
+          audioRef.current.currentTime = newTime;
+          setCurrentTime(newTime);
+        }
+      }
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        const newVolume = Math.min(volume + 0.1, 1);
+        setVolume(newVolume);
+        if (newVolume > 0) setIsMuted(false);
+      }
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        const newVolume = Math.max(volume - 0.1, 0);
+        setVolume(newVolume);
+        if (newVolume === 0) setIsMuted(true);
+      }
+    },
+    [
+      nextTrack,
+      prevTrack,
+      togglePlay,
+      volume,
+      setVolume,
+      setIsMuted,
+      setCurrentTime,
+    ],
+  );
+
+  useEffect(() => {
+    if (isPlaying || audioRef.current)
+      document.addEventListener("keydown", handleShortcut);
+
+    return () => {
+      document.removeEventListener("keydown", handleShortcut);
+    };
+  }, [handleShortcut, isPlaying]);
+
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = isMuted ? 0 : volume;
     }
   }, [volume, isMuted]);
 
-  const handleTimeUpdate = () => {
+  const handleTimeUpdate = useCallback(() => {
     if (audioRef.current) {
       setCurrentTime(audioRef.current.currentTime);
     }
-  };
+  }, [audioRef]);
 
-  const handleLoadedMetadata = () => {
+  const handleLoadedMetadata = useCallback(() => {
     if (audioRef.current) {
       setDuration(audioRef.current.duration);
     }
-  };
+  }, [audioRef]);
 
-  const handleProgressChange = (value: number[]) => {
-    if (audioRef.current) {
-      audioRef.current.currentTime = value[0];
-      setCurrentTime(value[0]);
-    }
-  };
+  const handleProgressChange = useCallback(
+    (value: number[]) => {
+      if (audioRef.current) {
+        audioRef.current.currentTime = value[0];
+        setCurrentTime(value[0]);
+      }
+    },
+    [audioRef],
+  );
 
-  const handleVolumeChange = (value: number[]) => {
-    setVolume(value[0]);
-    if (value[0] > 0) setIsMuted(false);
-  };
+  const handleVolumeChange = useCallback(
+    (value: number[]) => {
+      setVolume(value[0]);
+      if (value[0] > 0) setIsMuted(false);
+    },
+    [setVolume, setIsMuted],
+  );
 
-  const toggleLoop = () => {
-    setMode(mode === Mode.loop ? Mode.all : Mode.loop);
-  };
+  const toggleLoop = useCallback(() => {
+    setLooping();
+  }, [setLooping]);
 
-  const toggleShuffle = () => {
-    if (mode === Mode.shuffle) {
-      setMode(Mode.all);
-    } else {
-      setMode(Mode.shuffle);
-    }
-  };
+  const toggleShuffle = useCallback(() => {
+    setMode(mode === Mode.shuffle ? Mode.all : Mode.shuffle);
+  }, [setMode, mode]);
 
-  const playNext = () => {
-    if (mode === Mode.loop) {
+  const playNext = useCallback(() => {
+    if (isLooping) {
       setIsPlaying(true);
     } else {
       nextTrack();
     }
-  };
+  }, [isLooping, setIsPlaying, nextTrack]);
 
   if (!currentTrack) return null;
 
@@ -177,7 +247,7 @@ export default function AudioPlayer() {
             size="icon"
             onClick={toggleLoop}
             className={`transition-colors ${
-              mode === Mode.loop ? "text-primary" : "hover:text-primary"
+              isLooping ? "text-primary" : "hover:text-primary"
             }`}
           >
             <Repeat className="size-5" />

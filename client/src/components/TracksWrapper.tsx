@@ -5,13 +5,22 @@ import { Button } from "./ui/button";
 import { Play, Shuffle } from "lucide-react";
 import { Mode } from "@/states/PlaybackState";
 import { usePlaybackState } from "@/states/PlaybackState";
+import { useEffect } from "react";
 
 interface TracksWrapperProps {
   tracks: Track[];
+  playlistId?: string;
 }
 
-export default function TracksWrapper({ tracks }: TracksWrapperProps) {
-  const { mode, setMode, setTracks, setCurrentTrack } = usePlaybackState();
+export default function TracksWrapper({
+  tracks,
+  playlistId = null,
+}: TracksWrapperProps) {
+  const { mode, setMode, setTracks, setCurrentTrack, queue, queueIndex } =
+    usePlaybackState();
+  useEffect(() => {
+    console.log(queue, queueIndex);
+  }, [queue, queueIndex]);
 
   const handlePlayAll = () => {
     if (tracks && tracks.length > 0) {
@@ -21,12 +30,7 @@ export default function TracksWrapper({ tracks }: TracksWrapperProps) {
   };
 
   const handleShuffle = () => {
-    if (mode === Mode.shuffle) {
-      setMode(Mode.all);
-      setTracks(tracks);
-    } else {
-      setMode(Mode.shuffle);
-    }
+    setMode(mode === Mode.shuffle ? Mode.all : Mode.shuffle);
   };
 
   return (
@@ -69,6 +73,7 @@ export default function TracksWrapper({ tracks }: TracksWrapperProps) {
             track={track}
             index={index}
             allTracks={tracks}
+            playlistId={playlistId}
           />
         ))}
       </div>

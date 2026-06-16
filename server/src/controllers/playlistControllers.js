@@ -143,10 +143,38 @@ async function updateCoverPhoto(req, res, next) {
   }
 }
 
+async function removeTrackFromPlaylist(req, res, next) {
+  const { id, trackId } = req.params;
+  try {
+    const targetPlaylist = await Playlist.findById(id).populate("tracks");
+    if (!targetPlaylist) {
+      return next(new AppError("Playlist not found", 404));
+    }
+    const keyPairs = targetPlaylist.tracks.map((track) => [
+      track._id.toString(),
+      track,
+    ]);
+    const tracksMap = new Map(keyPairs);
+    tracksMap.delete(trackId);
+    const updatedTracks = Array.from(tracksMap.keys());
+    const updatedPlaylist = await Playlist.updateOne(
+      { _id: id },
+      {
+        $set: { tracks: updatedTracks },
+      },
+    );
+    res.json({ message: "Track removed successfully", updatedPlaylist });
+  } catch (error) {
+    console.error("Failed to remove track from playlist: ", error.message);
+    next(new AppError("Failed to remove track from playlist", 500));
+  }
+}
+
 export {
   createPlaylist,
   getAllPlaylists,
   getPlaylist,
   addTrackToPlaylist,
   updateCoverPhoto,
+  removeTrackFromPlaylist,
 };

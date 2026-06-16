@@ -1,38 +1,40 @@
 import { Alert, AlertDescription, AlertAction, AlertTitle } from "./ui/alert";
 import { Button } from "./ui/button";
 import { CheckCircle } from "lucide-react";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { useSuccessStore } from "@/states/SuccessState";
 
 export default function SuccessMessage() {
   const { successMessage, setSuccessMessageNull } = useSuccessStore();
 
-  if (!successMessage) {
-    return null;
-  }
-
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1, transition: { duration: 0.3 } }}
-      className="fixed bottom-10 min-w-125 max-w-96 bg-primary text-gray-800 border border-primary/20 shadow-2xl rounded-2xl"
-    >
-      <Alert className="border-none">
-        <CheckCircle />
-        <AlertTitle>Successful</AlertTitle>
-        <AlertDescription className="text-gray-900/80">
-          {successMessage}
-        </AlertDescription>
-        <AlertAction>
-          <Button
-            variant="ghost"
-            className="border border-background"
-            onClick={() => setSuccessMessageNull()}
-          >
-            Close
-          </Button>
-        </AlertAction>
-      </Alert>
-    </motion.div>
+    <AnimatePresence>
+      {successMessage && (
+        <motion.div
+          initial={{ x: "100%", opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          exit={{ x: "100%", opacity: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          className="fixed top-10 right-10 z-50 min-w-100 max-w-80 bg-surface-container-highest text-white border border-white/10 shadow-2xl rounded-lg"
+        >
+          <Alert className="border-none bg-transparent">
+            <CheckCircle className="text-primary" />
+            <AlertTitle className="text-white font-bold">Successful</AlertTitle>
+            <AlertDescription className="text-white/70">
+              {successMessage}
+            </AlertDescription>
+            <AlertAction>
+              <Button
+                variant="ghost"
+                className="hover:bg-white/10 text-white border border-white/20"
+                onClick={() => setSuccessMessageNull()}
+              >
+                Close
+              </Button>
+            </AlertAction>
+          </Alert>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
