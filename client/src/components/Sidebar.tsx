@@ -93,7 +93,7 @@ const Sidebar = () => {
       </div>
 
       {/* Navigation Links */}
-      <nav className="flex-1 px-4 py-8 space-y-2 overflow-y-auto">
+      <nav className="flex-1 px-4 py-8 space-y-2 overflow-y-auto scrollbar-minimal">
         {navLinks.map((item) => (
           <NavItem
             key={item.id}

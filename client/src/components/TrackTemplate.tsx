@@ -1,18 +1,7 @@
 import { formatDuration, formatRelativeDate } from "@/lib/utils";
-import {
-  ChevronRight,
-  ListPlus,
-  MoreVertical,
-  Pencil,
-  Play,
-  Trash2,
-} from "lucide-react";
-import { useState, useRef, useEffect } from "react";
-import { Button } from "./ui/button";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import apiClient from "@/lib/apiClient";
+import { Play } from "lucide-react";
 import { usePlaybackState } from "@/states/PlaybackState";
-import PlaylistMenu from "./PlaylistMenu";
+import TrackOptionsMenu from "./PlaylistMenu";
 import { memo } from "react";
 
 import type { Track } from "@/types/TrackType";
@@ -21,7 +10,7 @@ interface TrackTemplateProps {
   track: Track;
   index: number;
   allTracks?: Track[];
-  playlistId?: string;
+  playlistId?: string | null;
 }
 
 const TrackTemplate = ({
@@ -30,11 +19,6 @@ const TrackTemplate = ({
   allTracks,
   playlistId = null,
 }: TrackTemplateProps) => {
-  const [isOptionsOpen, setIsOptionsOpen] = useState(false);
-  const [isSubMenuOpen, setIsSubMenuOpen] = useState(false);
-  const queryClient = useQueryClient();
-  const optionsRef = useRef<HTMLDivElement>(null);
-
   const { currentTrack, isPlaying, setCurrentTrack, setTracks, togglePlay } =
     usePlaybackState();
   const isCurrent = currentTrack?._id === track._id;
@@ -54,46 +38,6 @@ const TrackTemplate = ({
       setCurrentTrack(track);
     }
   };
-
-  const delteMutation = useMutation({
-    mutationFn: async () => {
-      const url = playlistId
-        ? `/api/playlist/${playlistId}/track/${track._id}/remove`
-        : `/api/track/delete/${track._id}`;
-      const res = await apiClient.delete(url, {
-        withCredentials: true,
-      });
-
-      return res.data;
-    },
-    onSuccess: (data) => {
-      console.log(data);
-      queryClient.invalidateQueries({ queryKey: ["Tracks"] });
-      if (playlistId) {
-        queryClient.invalidateQueries({ queryKey: [`Playlist ${playlistId}`] });
-      }
-    },
-  });
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        optionsRef.current &&
-        !optionsRef.current.contains(event.target as Node)
-      ) {
-        setIsOptionsOpen(false);
-        setIsSubMenuOpen(false);
-      }
-    }
-
-    if (isOptionsOpen) {
-      document.addEventListener("click", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("click", handleClickOutside);
-    };
-  }, [isOptionsOpen]);
 
   return (
     <div
@@ -156,67 +100,8 @@ const TrackTemplate = ({
         {formatDuration(track.duration)}
       </div>
 
-      <div
-        className="flex items-center justify-center relative options-container"
-        ref={optionsRef}
-      >
-        <Button
-          variant="ghost"
-          size="icon"
-          className="hover:bg-white/10 rounded-full"
-          onClick={() => {
-            setIsOptionsOpen(!isOptionsOpen);
-          }}
-        >
-          <MoreVertical className="size-4" />
-        </Button>
-
-        {isOptionsOpen && (
-          <div
-            className="absolute right-0 top-0 mt-2 w-48 bg-surface-container-highest border border-white/10 rounded-lg shadow-2xl z-50 py-1"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button className="w-full px-4 py-2 text-left text-sm hover:bg-white/5 flex items-center gap-2 transition-colors">
-              <Pencil className="size-3.5" />
-              Edit
-            </button>
-
-            <div
-              className="relative"
-              onMouseEnter={() => setIsSubMenuOpen(true)}
-              onMouseLeave={() => setIsSubMenuOpen(false)}
-            >
-              <button className="w-full px-4 py-2 text-left text-sm hover:bg-white/5 flex items-center justify-between transition-colors">
-                <div className="flex items-center gap-2">
-                  <ListPlus className="size-3.5" />
-                  Add to playlist
-                </div>
-                <ChevronRight className="size-3.5" />
-              </button>
-
-              {isSubMenuOpen && (
-                <PlaylistMenu
-                  track={track}
-                  onClose={() => {
-                    setIsOptionsOpen(false);
-                    setIsSubMenuOpen(false);
-                  }}
-                />
-              )}
-            </div>
-
-            <button
-              onClick={() => {
-                delteMutation.mutate();
-                setIsOptionsOpen(false);
-              }}
-              className="w-full px-4 py-2 text-left text-sm hover:bg-white/5 flex items-center gap-2 text-error transition-colors"
-            >
-              <Trash2 className="size-3.5" />
-              Delete
-            </button>
-          </div>
-        )}
+      <div className="flex items-center justify-center options-container">
+        <TrackOptionsMenu track={track} playlistId={playlistId} />
       </div>
     </div>
   );

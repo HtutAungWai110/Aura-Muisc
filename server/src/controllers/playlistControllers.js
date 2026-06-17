@@ -145,8 +145,12 @@ async function updateCoverPhoto(req, res, next) {
 
 async function removeTrackFromPlaylist(req, res, next) {
   const { id, trackId } = req.params;
+  const userId = req.userId;
   try {
-    const targetPlaylist = await Playlist.findById(id).populate("tracks");
+    const targetPlaylist = await Playlist.findOne({
+      _id: id,
+      userId: userId,
+    }).populate("tracks");
     if (!targetPlaylist) {
       return next(new AppError("Playlist not found", 404));
     }

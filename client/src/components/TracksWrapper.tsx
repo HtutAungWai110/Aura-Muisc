@@ -35,25 +35,28 @@ export default function TracksWrapper({
 
   return (
     <div className="w-full mt-8">
-      <div className="flex gap-2 my-8">
-        <Button
-          className="rounded-full bg-primary w-12 h-12 hover:bg-primary/90 text-on-primary-container font-bold text-lg shadow-lg hover:shadow-primary/20 transition-all"
-          variant="ghost"
-          onClick={handlePlayAll}
-        >
-          <Play className="fill-current" />
-        </Button>
+      {tracks && tracks.length > 0 && (
+        <div className="flex gap-2 my-8">
+          <Button
+            className="rounded-full bg-primary w-12 h-12 hover:bg-primary/90 text-on-primary-container font-bold text-lg shadow-lg hover:shadow-primary/20 transition-all"
+            variant="ghost"
+            onClick={handlePlayAll}
+          >
+            <Play className="fill-current" />
+          </Button>
 
-        <Button
-          className={`rounded-full w-12 h-12 font-bold text-lg hover:text-primary transition-all ${
-            mode === Mode.shuffle ? "text-primary" : ""
-          }`}
-          variant="ghost"
-          onClick={handleShuffle}
-        >
-          <Shuffle className="fill-current" />
-        </Button>
-      </div>
+          <Button
+            className={`rounded-full w-12 h-12 font-bold text-lg hover:text-primary transition-all ${
+              mode === Mode.shuffle ? "text-primary" : ""
+            }`}
+            variant="ghost"
+            onClick={handleShuffle}
+          >
+            <Shuffle className="fill-current" />
+          </Button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="grid grid-cols-[48px_1fr_1fr_100px_48px] gap-4 px-4 py-2 text-on-surface-variant font-label-caps text-label-caps border-b border-white/5">
         <div className="flex justify-center">#</div>

@@ -33,7 +33,12 @@ export default function PlaylistPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
 
-  console.log(initialData);
+  useEffect(() => {
+    if (initialData && id) {
+      queryClient.setQueryData([`Playlist ${id}`], initialData);
+    }
+  }, [initialData, id, queryClient]);
+
   const {
     data: playlistData,
     isLoading,
@@ -51,12 +56,6 @@ export default function PlaylistPage() {
     refetchOnMount: true,
     initialData: initialData,
   });
-
-  useEffect(() => {
-    if (playlistData) {
-      console.log(playlistData);
-    }
-  }, [playlistData]);
 
   const uploadCoverMutation = useMutation({
     mutationFn: async (formData: FormData) => {
@@ -235,24 +234,6 @@ export default function PlaylistPage() {
               </span>
             </div>
           </div>
-        </div>
-
-        {/* Action Bar */}
-        <div className="flex items-center gap-6 mb-8">
-          <Button
-            className="rounded-full h-14 px-8 gap-3 bg-primary hover:bg-primary/90 text-on-primary-container font-bold text-lg shadow-lg hover:shadow-primary/20 transition-all"
-            onClick={handlePlayAll}
-          >
-            <Play className="size-6 fill-current" />
-            Play All
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="size-12 rounded-full border border-white/10 hover:bg-white/5"
-          >
-            <MoreHorizontal className="size-6 text-on-surface-variant" />
-          </Button>
         </div>
 
         {/* Tracks List */}

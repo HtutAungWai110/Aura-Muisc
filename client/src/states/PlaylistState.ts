@@ -15,6 +15,7 @@ interface PlaylistStore {
   addTrack: (id: string, payload: Track) => void;
   removeTrack: (id: string, trackId: string) => void;
   trackExist: (id: string, trackId: string) => boolean;
+  removeTrackAfterDelete: (trackId: string) => void;
 }
 
 export const usePlaylistStore = create<PlaylistStore>((set, get) => ({
@@ -85,5 +86,15 @@ export const usePlaylistStore = create<PlaylistStore>((set, get) => ({
     const target = playlists.find((item: Playlist) => item._id === id);
     const exist = target.tracks.some((track: Track) => track._id === trackId);
     return exist;
+  },
+  removeTrackAfterDelete: (trackId) => {
+    const { playlists } = get();
+    const updatedPlaylists = playlists.map((p: Playlist) => {
+      return {
+        ...p,
+        tracks: p.tracks.filter((t: Track) => t._id !== trackId),
+      };
+    });
+    set({ playlists: updatedPlaylists });
   },
 }));
