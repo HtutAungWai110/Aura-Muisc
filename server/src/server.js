@@ -43,7 +43,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.get("/", (req, res) => {
-  return res.json("Hello");
+  return res.json("Hello from Aura music app");
 });
 
 app.use("/auth", authRoutes);

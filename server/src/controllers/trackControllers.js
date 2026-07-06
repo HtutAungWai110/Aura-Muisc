@@ -4,6 +4,7 @@ import path from "path";
 import fs from "fs/promises";
 import * as mm from "music-metadata";
 import AppError from "../lib/appError.js";
+import { supabase } from "../config/supabase.js";
 
 const getTrackMetadata = async (filePath) => {
   return new Promise((resolve) => {
@@ -30,7 +31,7 @@ const getTrackMetadata = async (filePath) => {
 
 async function addTracks(req, res, next) {
   try {
-    // Validate files exist
+    // 1. Validate files exist in memory storage
     if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
       return res.status(400).json({ message: "No tracks uploaded" });
     }
@@ -39,67 +40,95 @@ async function addTracks(req, res, next) {
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized" });
     }
+
     const trackPromises = req.files.map(async (file, index) => {
       try {
-        // Validate file exists
-        if (!file.path) {
-          throw new Error(`File path missing for file at index ${index}`);
-        }
-
-        // Parse audio metadata for duration
-        let duration = 0;
-        try {
-          const { format } = await mm.parseFile(file.path);
-          duration = format.duration || 0;
-        } catch (parseError) {
-          console.warn(
-            "Warning: Could not parse audio format for:",
-            file.path,
-            parseError,
+        // 🛡️ REPLACED: Check for file.buffer instead of file.path
+        if (!file.buffer) {
+          throw new Error(
+            `File binary buffer missing for file at index ${index}`,
           );
         }
 
-        const metadata = await getTrackMetadata(file.path);
+        let duration = 0;
+        let metadata = { title: null, artist: null, pictureData: null };
+
+        try {
+          const parsedMeta = await mm.parseBuffer(file.buffer, file.mimetype);
+          duration = parsedMeta.format.duration || 0;
+          metadata.title = parsedMeta.common.title;
+          metadata.artist = parsedMeta.common.artist;
+          if (
+            parsedMeta.common.picture &&
+            parsedMeta.common.picture.length > 0
+          ) {
+            metadata.pictureData = {
+              data: parsedMeta.common.picture[0].data,
+              type: parsedMeta.common.picture[0].format,
+            };
+          }
+        } catch (parseError) {
+          console.warn(
+            `Warning: Could not parse audio buffer at index ${index}:`,
+            parseError,
+          );
+        }
         let thumbnailUrl = null;
-
-        const thumbnailDir = path.join(
-          "uploads",
-          userId.toString(),
-          "thumbnail",
-        );
-        await fs.mkdir(thumbnailDir, { recursive: true });
-
-        // Handle thumbnail extraction
         if (metadata.pictureData && metadata.pictureData.data) {
           try {
-            const { data, type } = metadata.pictureData;
-            const imageBuffer = Buffer.from(data);
+            const { data: thumbNailData, type } = metadata.pictureData;
+            const imageBuffer = Buffer.from(thumbNailData);
             const extension = type.split("/")[1] || "jpg";
             const thumbnailFilename = `thumb-${Date.now()}-${index}.${extension}`;
-            const finalThumbnailPath = path.join(
-              thumbnailDir,
-              thumbnailFilename,
-            );
-            await fs.writeFile(finalThumbnailPath, imageBuffer);
-            // Use forward slashes for URL consistency
-            thumbnailUrl = finalThumbnailPath.replace(/\\/g, "/");
+
+            const { data: thumbData, error: thumbError } =
+              await supabase.storage
+                .from("thumbnail-assets")
+                .upload(thumbnailFilename, imageBuffer, {
+                  contentType: type,
+                  upsert: true,
+                });
+
+            if (thumbError) throw thumbError;
+
+            if (thumbData) {
+              const {
+                data: { publicUrl },
+              } = supabase.storage
+                .from("thumbnail-assets")
+                .getPublicUrl(thumbnailFilename);
+              thumbnailUrl = publicUrl;
+            }
           } catch (thumbnailError) {
             console.warn(
-              "Warning: Failed to save thumbnail for:",
-              file.path,
+              `Warning: Failed to save thumbnail from buffer:`,
               thumbnailError,
             );
           }
         }
 
-        // Create track document
+        const audioFileName = `audio-${Date.now()}-${file.originalname}`;
+
+        const { data: audioData, error: audioError } = await supabase.storage
+          .from("music-assets")
+          .upload(audioFileName, file.buffer, {
+            contentType: file.mimetype,
+            upsert: true,
+          });
+
+        if (audioError) throw audioError;
+
+        const {
+          data: { publicUrl: audioFilePublicUrl },
+        } = supabase.storage.from("music-assets").getPublicUrl(audioFileName);
+
         const newTrack = new Track({
           title:
             metadata.title ??
             file.originalname.replace(/\.[^/.]+$/, "") ??
             "Unknown Title",
           artist: metadata.artist ?? "Unknown Artist",
-          fileUrl: file.path.split(path.sep).join("/"),
+          fileUrl: audioFilePublicUrl,
           thumbnailUrl: thumbnailUrl,
           userId: userId,
           duration: duration,
@@ -108,12 +137,9 @@ async function addTracks(req, res, next) {
         return await newTrack.save();
       } catch (fileError) {
         console.error("Error processing file at index", index, ":", fileError);
-        // Re-throw to be caught by outer try/catch
         throw fileError;
       }
     });
-
-    // Wait for all tracks to be processed
     const savedTracks = await Promise.all(trackPromises);
 
     return res.status(201).json({
@@ -125,7 +151,6 @@ async function addTracks(req, res, next) {
     next(new AppError("Failed to upload tracks. Please try again.", 500));
   }
 }
-
 async function getTracks(req, res, next) {
   try {
     const userId = req.userId;
@@ -188,9 +213,7 @@ async function deleteTrack(req, res, next) {
     });
   } catch (error) {
     console.error("Failed to delete track execution error:", error.message);
-    return next(
-      new AppError("Failed to delete track. Try deleting again.", 500),
-    );
+    return next(new AppError(error.message, 500));
   }
 }
 

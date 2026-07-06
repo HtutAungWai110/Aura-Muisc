@@ -8,10 +8,14 @@ import { useUser } from "./states/userState";
 import { useEffect } from "react";
 
 function App() {
-  const { fetchUserData } = useUser();
+  const { fetchUserData, userData } = useUser();
   useEffect(() => {
     fetchUserData();
   }, [fetchUserData]);
+
+  useEffect(() => {
+    console.log(userData);
+  }, [userData]);
 
   return (
     <BrowserRouter>

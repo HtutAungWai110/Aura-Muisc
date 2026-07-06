@@ -22,20 +22,7 @@ import multer from "multer";
 
 const router = express.Router();
 
-const storage = multer.diskStorage({
-  destination: function (req, res, cb) {
-    const dir = `./uploads/${req.userId}/covers`;
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    cb(null, dir);
-  },
-  filename: function (req, file, cb) {
-    cb(null, `cover-${Date.now()}-${file.originalname}`);
-  },
-});
-
-const upload = multer({ storage: storage });
+const upload = multer({ storage: multer.memoryStorage() });
 //Test created
 router.post(
   "/create",

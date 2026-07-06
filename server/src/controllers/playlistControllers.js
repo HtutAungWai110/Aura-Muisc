@@ -1,7 +1,7 @@
 import Playlist from "../models/playlist.js";
 import AppError from "../lib/appError.js";
 import Track from "../models/track.js";
-import path from "path";
+import { supabase } from "../config/supabase.js";
 
 async function createPlaylist(req, res, next) {
   try {
@@ -123,6 +123,25 @@ async function addTrackToPlaylist(req, res, next) {
 async function updateCoverPhoto(req, res, next) {
   const { id } = req.params;
   const userId = req.userId;
+  const fileName = `cover-${Date.now()}-${req.file.originalname}`;
+  const { data, error } = await supabase.storage
+    .from("playlist-cover-assets")
+    .upload(fileName, req.file.buffer, {
+      contentType: req.file.mimetype,
+      upsert: true,
+    });
+
+  if (error) {
+    console.error("Failed to upload cover photo", error.message);
+    return next(
+      new AppError("Failed to upload cover photo. Try again later."),
+      500,
+    );
+  }
+
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from("playlist-cover-assets").getPublicUrl(fileName);
   try {
     const updatedPlaylist = await Playlist.findOneAndUpdate(
       {
@@ -131,7 +150,7 @@ async function updateCoverPhoto(req, res, next) {
       },
       {
         $set: {
-          coverPhotoUrl: req.file.path.replace(/\\/g, "/"),
+          coverPhotoUrl: publicUrl,
         },
       },
       { new: true, runValidators: true },

@@ -15,7 +15,7 @@ export default function PlaylistCard({ playlist }: PlaylistCardProps) {
         <div className="relative aspect-square overflow-hidden rounded-lg shadow-lg">
           {playlist.coverPhotoUrl ? (
             <img
-              src={`/api/${playlist.coverPhotoUrl}`}
+              src={`${playlist.coverPhotoUrl}`}
               alt={playlist.title}
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
             />

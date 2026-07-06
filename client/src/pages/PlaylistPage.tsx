@@ -3,15 +3,7 @@ import { usePlaylistStore } from "@/states/PlaylistState";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import apiClient from "@/lib/apiClient";
 import TracksWrapper from "@/components/TracksWrapper";
-import {
-  Clock,
-  Play,
-  Music,
-  MoreHorizontal,
-  Camera,
-  X,
-  Check,
-} from "lucide-react";
+import { Clock, Music, Camera, X, Check } from "lucide-react";
 import { formatDuration } from "@/lib/utils";
 import type { Playlist } from "@/types/PlaylistType";
 import { Spinner } from "@/components/ui/spinner";
@@ -176,7 +168,7 @@ export default function PlaylistPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-primary/10 via-background to-background" />
         {playlistData.coverPhotoUrl && (
           <img
-            src={`/api/${playlistData.coverPhotoUrl}`}
+            src={`${playlistData.coverPhotoUrl}`}
             className="w-full h-full object-cover blur-3xl opacity-20 scale-110"
             alt=""
           />
@@ -189,7 +181,7 @@ export default function PlaylistPage() {
           <div className="size-56 md:size-64 rounded-xl shadow-2xl overflow-hidden flex-shrink-0 bg-surface-container-high relative group">
             {playlistData.coverPhotoUrl ? (
               <img
-                src={`/api/${playlistData.coverPhotoUrl}`}
+                src={`${playlistData.coverPhotoUrl}`}
                 alt={playlistData.title}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />

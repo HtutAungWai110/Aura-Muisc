@@ -174,7 +174,7 @@ export default function AudioPlayer() {
     <div className="fixed bottom-0 left-0 right-0 h-24 bg-surface-container/80 backdrop-blur-xl border-t border-white/5 z-[100] px-8 flex items-center justify-between">
       <audio
         ref={audioRef}
-        src={`/api/${currentTrack.fileUrl}`}
+        src={`${currentTrack.fileUrl}`}
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={playNext}
@@ -186,7 +186,7 @@ export default function AudioPlayer() {
       <div className="flex items-center gap-4 w-1/3">
         {currentTrack.thumbnailUrl ? (
           <img
-            src={`/api/${currentTrack.thumbnailUrl}`}
+            src={`${currentTrack.thumbnailUrl}`}
             alt={currentTrack.title}
             className="size-14 rounded-md object-cover shadow-lg"
           />

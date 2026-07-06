@@ -71,7 +71,7 @@ const TrackTemplate = ({
       <div className="flex items-center gap-3 min-w-0">
         {track.thumbnailUrl ? (
           <img
-            src={`/api/${track.thumbnailUrl}`}
+            src={`${track.thumbnailUrl}`}
             alt={track.title}
             className="size-10 rounded object-cover flex-shrink-0"
           />

@@ -28,8 +28,7 @@ export const useUser = create<UserState>((set) => ({
       const res = await apiClient.get("/api/user/me", {
         withCredentials: true,
       });
-      const { user } = res.data || null;
-      set({ userData: user, isLoading: false });
+      set({ userData: res.data, isLoading: false });
     } catch (e) {
       // Error is already set by the interceptor in apiClient
       set({ isLoading: false });
