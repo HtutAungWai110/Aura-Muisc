@@ -65,7 +65,7 @@ async function getPlaylist(req, res, next) {
       next(new AppError("Playlist not found.", 404));
     }
 
-    return res.json(playlist);
+    return res.status(200).json(playlist);
   } catch (error) {
     console.error("Failed to fetch playlist, error: ", error.message);
     next(new AppError("Failed to fetch playlist. Try again later.", 500));

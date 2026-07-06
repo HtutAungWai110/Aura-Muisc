@@ -36,16 +36,16 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage: storage });
-
+//Test created
 router.post(
   "/create",
   authMiddleware,
   validationMiddleware(playlistTitleSchema),
   createPlaylist,
 );
-
+//Test created
 router.get("/all", authMiddleware, getAllPlaylists);
-
+//Test created
 router.get(
   "/:id",
   authMiddleware,
@@ -72,6 +72,7 @@ router.post(
 router.delete(
   "/:id/track/:trackId/remove",
   authMiddleware,
+  paramValidationMiddleware(playlistAndTrackIdSchema),
   removeTrackFromPlaylist,
 );
 

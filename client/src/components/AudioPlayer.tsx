@@ -9,11 +9,13 @@ import {
   VolumeX,
   Shuffle,
   Repeat,
+  ListMusic,
 } from "lucide-react";
 import { Slider } from "./ui/slider"; // Assuming there is a slider in ui/
 import { Button } from "./ui/button";
 import { formatDuration } from "@/lib/utils";
 import { useCallback } from "react";
+import QueuePanel from "./QueuePanel";
 
 export default function AudioPlayer() {
   const {
@@ -35,6 +37,7 @@ export default function AudioPlayer() {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
+  const [isQueueOpen, setIsQueueOpen] = useState(false);
   useEffect(() => {
     if (audioRef.current) {
       if (isPlaying) {
@@ -49,6 +52,7 @@ export default function AudioPlayer() {
 
   const handleShortcut = useCallback(
     (e: KeyboardEvent) => {
+      e.preventDefault();
       if (e.ctrlKey && e.key === "ArrowRight") {
         nextTrack();
       }
@@ -276,6 +280,21 @@ export default function AudioPlayer() {
         <Button
           variant="ghost"
           size="icon"
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsQueueOpen(!isQueueOpen);
+          }}
+          className={`transition-colors ${
+            isQueueOpen
+              ? "text-primary"
+              : "text-on-surface-variant hover:text-primary"
+          }`}
+        >
+          <ListMusic className="size-5" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => setIsMuted(!isMuted)}
           className="text-on-surface-variant"
         >
@@ -293,6 +312,8 @@ export default function AudioPlayer() {
           className="w-24"
         />
       </div>
+
+      {isQueueOpen && <QueuePanel onClose={() => setIsQueueOpen(false)} />}
     </div>
   );
 }
