@@ -123,26 +123,44 @@ async function addTrackToPlaylist(req, res, next) {
 async function updateCoverPhoto(req, res, next) {
   const { id } = req.params;
   const userId = req.userId;
-  const fileName = `cover-${Date.now()}-${req.file.originalname}`;
-  const { data, error } = await supabase.storage
-    .from("playlist-cover-assets")
-    .upload(fileName, req.file.buffer, {
-      contentType: req.file.mimetype,
-      upsert: true,
-    });
 
-  if (error) {
-    console.error("Failed to upload cover photo", error.message);
-    return next(
-      new AppError("Failed to upload cover photo. Try again later."),
-      500,
-    );
+  // First, find the playlist to get the current cover photo (if any)
+  const existingPlaylist = await Playlist.findOne({
+    _id: id,
+    userId: userId,
+  });
+
+  if (!existingPlaylist) {
+    return next(new AppError("Playlist not found", 404));
   }
-
-  const {
-    data: { publicUrl },
-  } = supabase.storage.from("playlist-cover-assets").getPublicUrl(fileName);
   try {
+    if (existingPlaylist.coverPhotoUrl) {
+      const urlParts = existingPlaylist.coverPhotoUrl.split("/");
+      let fileName = urlParts[urlParts.length - 1];
+      // Decode URL encoding (e.g., %20 -> space)
+      fileName = decodeURIComponent(fileName);
+      const { error: coverError } = await supabase.storage
+        .from("playlist-cover-assets")
+        .remove([fileName]);
+
+      if (coverError) throw coverError;
+    }
+
+    const fileName = `cover-${Date.now()}-${req.file.originalname}`;
+    const { data, error } = await supabase.storage
+      .from("playlist-cover-assets")
+      .upload(fileName, req.file.buffer, {
+        contentType: req.file.mimetype,
+        upsert: true,
+      });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("playlist-cover-assets").getPublicUrl(fileName);
     const updatedPlaylist = await Playlist.findOneAndUpdate(
       {
         _id: id,
@@ -158,7 +176,9 @@ async function updateCoverPhoto(req, res, next) {
     res.json({ message: "Cover photo set successfully", updatedPlaylist });
   } catch (error) {
     console.error("Failed to update cover photo", error.message);
-    next(new AppError("Failed to update cover photo. Try again later."), 500);
+    return next(
+      new AppError("Failed to update cover photo. Try uploading later.", 500),
+    );
   }
 }
 
@@ -193,6 +213,52 @@ async function removeTrackFromPlaylist(req, res, next) {
   }
 }
 
+async function deletePlaylist(req, res, next) {
+  const { id } = req.params;
+  const userId = req.userId;
+
+  try {
+    const targetPlaylist = await Playlist.findOne({
+      _id: id,
+      userId: userId,
+    });
+
+    if (!targetPlaylist) {
+      return next(new AppError("Playlist trying to delete not found", 404));
+    }
+
+    // Delete cover photo from Supabase storage if it exists
+    if (targetPlaylist.coverPhotoUrl) {
+      try {
+        const urlParts = targetPlaylist.coverPhotoUrl.split("/");
+        let fileName = urlParts[urlParts.length - 1];
+        // Decode URL encoding (e.g., %20 -> space)
+        fileName = decodeURIComponent(fileName);
+        const { error: coverError } = await supabase.storage
+          .from("playlist-cover-assets")
+          .remove([fileName]);
+
+        if (coverError) throw coverError;
+      } catch (err) {
+        console.warn(
+          `Failed to delete cover photo from Supabase storage:`,
+          err.message,
+        );
+      }
+    }
+
+    await Playlist.deleteOne({ _id: id });
+
+    return res.status(200).json({
+      status: "success",
+      message: "Playlist and cover photo successfully deleted.",
+    });
+  } catch (error) {
+    console.error("Failed to delete playlist execution error:", error.message);
+    return next(new AppError(error.message, 500));
+  }
+}
+
 export {
   createPlaylist,
   getAllPlaylists,
@@ -200,4 +266,5 @@ export {
   addTrackToPlaylist,
   updateCoverPhoto,
   removeTrackFromPlaylist,
+  deletePlaylist,
 };

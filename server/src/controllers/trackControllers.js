@@ -178,31 +178,35 @@ async function deleteTrack(req, res, next) {
     }
 
     if (target.fileUrl) {
-      const audioAbsolutePath = path.resolve(
-        process.cwd(),
-        decodeURIComponent(target.fileUrl),
-      );
-
+      // Extract filename from public URL for Supabase storage deletion
       try {
-        await fs.stat(audioAbsolutePath);
-        await fs.unlink(audioAbsolutePath);
+        const urlParts = target.fileUrl.split('/');
+        let fileName = urlParts[urlParts.length - 1];
+        // Decode URL encoding (e.g., %20 -> space)
+        fileName = decodeURIComponent(fileName);
+        const { error: audioError } = await supabase.storage
+          .from('music-assets')
+          .remove([fileName]);
+
+        if (audioError) throw audioError;
       } catch (err) {
-        console.warn(`Audio asset missing on disk at: ${audioAbsolutePath}`);
+        console.warn(`Failed to delete audio from Supabase storage:`, err.message);
       }
     }
     if (target.thumbnailUrl) {
-      const thumbAbsolutePath = path.resolve(
-        process.cwd(),
-        decodeURIComponent(target.thumbnailUrl),
-      );
-
+      // Extract filename from public URL for Supabase storage deletion
       try {
-        await fs.stat(thumbAbsolutePath);
-        await fs.unlink(thumbAbsolutePath);
+        const urlParts = target.thumbnailUrl.split('/');
+        let fileName = urlParts[urlParts.length - 1];
+        // Decode URL encoding (e.g., %20 -> space)
+        fileName = decodeURIComponent(fileName);
+        const { error: thumbError } = await supabase.storage
+          .from('thumbnail-assets')
+          .remove([fileName]);
+
+        if (thumbError) throw thumbError;
       } catch (err) {
-        console.warn(
-          `Thumbnail asset missing on disk at: ${thumbAbsolutePath}`,
-        );
+        console.warn(`Failed to delete thumbnail from Supabase storage:`, err.message);
       }
     }
     await Track.deleteOne({ _id: id });

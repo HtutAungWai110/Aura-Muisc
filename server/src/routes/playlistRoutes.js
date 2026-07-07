@@ -6,6 +6,7 @@ import {
   addTrackToPlaylist,
   updateCoverPhoto,
   removeTrackFromPlaylist,
+  deletePlaylist,
 } from "../controllers/playlistControllers.js";
 import validationMiddleware from "../middleware/ValidationMiddleware.js";
 import paramValidationMiddleware from "../middleware/paramValidationMiddleware.js";
@@ -61,6 +62,13 @@ router.delete(
   authMiddleware,
   paramValidationMiddleware(playlistAndTrackIdSchema),
   removeTrackFromPlaylist,
+);
+
+router.delete(
+  "/delete/:id",
+  authMiddleware,
+  paramValidationMiddleware(playlistIdSchema),
+  deletePlaylist,
 );
 
 export default router;

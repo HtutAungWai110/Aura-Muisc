@@ -53,47 +53,49 @@ export default function AudioPlayer() {
   const handleShortcut = useCallback(
     (e: KeyboardEvent) => {
       e.preventDefault();
-      if (e.ctrlKey && e.key === "ArrowRight") {
-        nextTrack();
-      }
-      if (e.ctrlKey && e.key === "ArrowLeft") {
-        prevTrack();
-      }
-      if (e.key === " ") {
-        togglePlay();
-      }
+      if (audioRef.current) {
+        if (e.ctrlKey && e.key === "ArrowRight") {
+          nextTrack();
+        }
+        if (e.ctrlKey && e.key === "ArrowLeft") {
+          prevTrack();
+        }
+        if (e.key === " ") {
+          togglePlay();
+        }
 
-      // New shortcuts
-      if (e.shiftKey && e.key === "ArrowRight") {
-        e.preventDefault();
-        if (audioRef.current) {
-          const newTime = Math.min(
-            audioRef.current.currentTime + 5,
-            audioRef.current.duration,
-          );
-          audioRef.current.currentTime = newTime;
-          setCurrentTime(newTime);
+        // New shortcuts
+        if (e.shiftKey && e.key === "ArrowRight") {
+          e.preventDefault();
+          if (audioRef.current) {
+            const newTime = Math.min(
+              audioRef.current.currentTime + 5,
+              audioRef.current.duration,
+            );
+            audioRef.current.currentTime = newTime;
+            setCurrentTime(newTime);
+          }
         }
-      }
-      if (e.shiftKey && e.key === "ArrowLeft") {
-        e.preventDefault();
-        if (audioRef.current) {
-          const newTime = Math.max(audioRef.current.currentTime - 5, 0);
-          audioRef.current.currentTime = newTime;
-          setCurrentTime(newTime);
+        if (e.shiftKey && e.key === "ArrowLeft") {
+          e.preventDefault();
+          if (audioRef.current) {
+            const newTime = Math.max(audioRef.current.currentTime - 5, 0);
+            audioRef.current.currentTime = newTime;
+            setCurrentTime(newTime);
+          }
         }
-      }
-      if (e.key === "ArrowUp") {
-        e.preventDefault();
-        const newVolume = Math.min(volume + 0.1, 1);
-        setVolume(newVolume);
-        if (newVolume > 0) setIsMuted(false);
-      }
-      if (e.key === "ArrowDown") {
-        e.preventDefault();
-        const newVolume = Math.max(volume - 0.1, 0);
-        setVolume(newVolume);
-        if (newVolume === 0) setIsMuted(true);
+        if (e.key === "ArrowUp") {
+          e.preventDefault();
+          const newVolume = Math.min(volume + 0.1, 1);
+          setVolume(newVolume);
+          if (newVolume > 0) setIsMuted(false);
+        }
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          const newVolume = Math.max(volume - 0.1, 0);
+          setVolume(newVolume);
+          if (newVolume === 0) setIsMuted(true);
+        }
       }
     },
     [
