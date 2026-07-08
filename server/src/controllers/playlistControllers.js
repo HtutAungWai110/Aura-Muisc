@@ -251,7 +251,7 @@ async function deletePlaylist(req, res, next) {
 
     return res.status(200).json({
       status: "success",
-      message: "Playlist and cover photo successfully deleted.",
+      message: "Playlist successfully deleted.",
     });
   } catch (error) {
     console.error("Failed to delete playlist execution error:", error.message);

@@ -6,6 +6,7 @@ import { Routes, Route, BrowserRouter } from "react-router-dom";
 import PublicRoute from "./lib/publicRoute";
 import { useUser } from "./states/userState";
 import { useEffect } from "react";
+import PlaylistsPage from "./pages/PlaylistsPage";
 
 function App() {
   const { fetchUserData, userData } = useUser();
@@ -27,8 +28,7 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={<Library />} />
           <Route path="/library" element={<Library />} />
-          <Route path="/discover" element={<div>Discover Page</div>} />
-          <Route path="/playlists" element={<div>Playlists Page</div>} />
+          <Route path="/playlists" element={<PlaylistsPage />} />
           <Route path="/settings" element={<div>Settings Page</div>} />
           <Route path="/playlist/:id" element={<PlaylistPage />} />
         </Route>

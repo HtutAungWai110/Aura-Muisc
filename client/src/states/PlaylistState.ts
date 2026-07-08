@@ -16,6 +16,7 @@ interface PlaylistStore {
   removeTrack: (id: string, trackId: string) => void;
   trackExist: (id: string, trackId: string) => boolean;
   removeTrackAfterDelete: (trackId: string) => void;
+  removePlaylist: (id: string) => void;
 }
 
 export const usePlaylistStore = create<PlaylistStore>((set, get) => ({
@@ -95,6 +96,11 @@ export const usePlaylistStore = create<PlaylistStore>((set, get) => ({
         tracks: p.tracks.filter((t: Track) => t._id !== trackId),
       };
     });
+    set({ playlists: updatedPlaylists });
+  },
+  removePlaylist: (id) => {
+    const { playlists } = get();
+    const updatedPlaylists = playlists.filter((p: Playlist) => p._id !== id);
     set({ playlists: updatedPlaylists });
   },
 }));

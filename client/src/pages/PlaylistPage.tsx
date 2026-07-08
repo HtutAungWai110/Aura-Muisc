@@ -1,28 +1,24 @@
 import { useParams } from "react-router-dom";
 import { usePlaylistStore } from "@/states/PlaylistState";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import apiClient from "@/lib/apiClient";
 import TracksWrapper from "@/components/TracksWrapper";
-import { Clock, Music, Camera, X, Check } from "lucide-react";
+import { Clock } from "lucide-react";
 import { formatDuration } from "@/lib/utils";
 import type { Playlist } from "@/types/PlaylistType";
 import { Spinner } from "@/components/ui/spinner";
-import { Button } from "@/components/ui/button";
-import { usePlaybackState } from "@/states/PlaybackState";
-import { useEffect, useRef, useState } from "react";
-import PhotoCropper from "@/components/PhotoCropper";
-import { getCroppedImg } from "@/lib/cropImage";
-import type { Area } from "react-easy-crop";
-import { base64ToFile } from "@/lib/convertImage";
+import { useEffect, useState } from "react";
+import PlaylistOptionsBox from "@/components/PlaylistOptionsBox";
+import CoverPhotoDisplay from "@/components/CoverPhotoDisplay";
+import PlaylistEditPanel from "@/components/PlaylistEditPanel";
 
 export default function PlaylistPage() {
   const { id } = useParams<{ id: string }>();
-  const { getPlaylist, updatePlaylist } = usePlaylistStore();
+  const { getPlaylist } = usePlaylistStore();
   const initialData = getPlaylist(id);
-  const { setCurrentTrack, setTracks } = usePlaybackState();
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -49,51 +45,16 @@ export default function PlaylistPage() {
     initialData: initialData,
   });
 
-  const uploadCoverMutation = useMutation({
-    mutationFn: async (formData: FormData) => {
-      // Sending as JSON or FormData depending on backend expectation.
-      // Given the request for base64, we'll send it in the body.
-      const res = await apiClient.post(`/api/playlist/${id}/cover`, formData, {
-        withCredentials: true,
-      });
-      return res.data;
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: [`Playlist ${id}`] });
-      const { updatedPlaylist } = data;
-      updatePlaylist(id, updatedPlaylist);
-
-      setSelectedImage(null);
-    },
-  });
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setSelectedImage(imageUrl);
-    }
+  const handleOpenMenu = (event: MouseEvent) => {
+    setAnchorEl(event.currentTarget as HTMLElement);
   };
 
-  const handleSaveCrop = async () => {
-    if (selectedImage && croppedAreaPixels) {
-      try {
-        const base64 = await getCroppedImg(selectedImage, croppedAreaPixels);
-        const croppedFile = base64ToFile(base64, "playlist-cover.jpg");
-        const form = new FormData();
-        form.append("cover", croppedFile);
-        uploadCoverMutation.mutate(form);
-      } catch (error) {
-        console.error("Failed to crop image", error);
-      }
-    }
+  const onEdit = (): void => {
+    setIsEditing(true);
   };
 
-  const handlePlayAll = () => {
-    if (playlistData && playlistData.tracks.length > 0) {
-      setTracks(playlistData.tracks);
-      setCurrentTrack(playlistData.tracks[0]);
-    }
+  const handleCloseMenu = () => {
+    setAnchorEl(null);
   };
 
   if (isLoading && !playlistData) {
@@ -123,91 +84,21 @@ export default function PlaylistPage() {
   );
 
   return (
-    <div className="ml-80 min-h-screen flex flex-col relative overflow-hidden bg-background">
-      {/* Photo Cropper Modal */}
-      {selectedImage && (
-        <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-xl flex flex-col">
-          <div className="flex items-center justify-between p-6 border-b border-white/10">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setSelectedImage(null)}
-                className="rounded-full"
-              >
-                <X className="size-6" />
-              </Button>
-              <h2 className="text-xl font-bold">Crop Cover Photo</h2>
-            </div>
-            <Button
-              className="rounded-full px-6 gap-2 bg-primary text-on-primary-container font-bold"
-              onClick={handleSaveCrop}
-              disabled={uploadCoverMutation.isPending}
-            >
-              {uploadCoverMutation.isPending ? (
-                <Spinner />
-              ) : (
-                <>
-                  <Check className="size-5" />
-                  Save Photo
-                </>
-              )}
-            </Button>
-          </div>
-          <div className="flex-1 relative">
-            <PhotoCropper
-              imageUrl={selectedImage}
-              onCropComplete={(_, pixels) => setCroppedAreaPixels(pixels)}
-            />
-          </div>
-        </div>
+    <div className="ml-80 min-h-screen flex flex-col overflow-hidden bg-background">
+      {isEditing && (
+        <PlaylistEditPanel
+          onClose={() => setIsEditing(false)}
+          playlist={playlistData}
+        />
       )}
-
-      {/* Dynamic Background */}
-      <div className="absolute top-0 left-0 w-full h-[500px] -z-10 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/10 via-background to-background" />
-        {playlistData.coverPhotoUrl && (
-          <img
-            src={`${playlistData.coverPhotoUrl}`}
-            className="w-full h-full object-cover blur-3xl opacity-20 scale-110"
-            alt=""
-          />
-        )}
-      </div>
-
       <div className="p-container-padding-desktop pt-12">
         {/* Playlist Hero */}
         <div className="flex flex-col md:flex-row items-end gap-8 mb-10">
-          <div className="size-56 md:size-64 rounded-xl shadow-2xl overflow-hidden flex-shrink-0 bg-surface-container-high relative group">
-            {playlistData.coverPhotoUrl ? (
-              <img
-                src={`${playlistData.coverPhotoUrl}`}
-                alt={playlistData.title}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-surface-container-high to-surface-container-low">
-                <Music className="size-24 text-on-surface-variant opacity-10" />
-              </div>
-            )}
-            <div
-              className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center cursor-pointer gap-2"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <Camera className="size-8 text-white" />
-              <span className="text-white text-xs font-bold uppercase tracking-wider">
-                Add cover photo
-              </span>
-            </div>
-            <input
-              type="file"
-              ref={fileInputRef}
-              className="hidden"
-              accept="image/*"
-              onChange={handleFileChange}
-            />
-          </div>
-
+          <CoverPhotoDisplay
+            isOnEditMode={false}
+            coverPhotoUrl={playlistData.coverPhotoUrl}
+            playlistId={playlistData._id}
+          />
           <div className="flex flex-col gap-2 pb-2">
             <span className="font-label-caps text-label-caps text-primary uppercase tracking-[0.2em] mb-1">
               Playlist
@@ -224,6 +115,20 @@ export default function PlaylistPage() {
                 <Clock className="size-3.5" />
                 {formatDuration(totalDuration)}
               </span>
+            </div>
+            <div className="relative mt-4">
+              <button
+                onClick={handleOpenMenu}
+                className="rounded-full p-1 text-neutral hover:bg-primary/10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-200 focus:ring-primary"
+              >
+                <span className="material-symbols-outlined">more_vert</span>
+              </button>
+              <PlaylistOptionsBox
+                playlist={playlistData}
+                anchorEl={anchorEl}
+                onClose={handleCloseMenu}
+                onEdit={onEdit}
+              />
             </div>
           </div>
         </div>

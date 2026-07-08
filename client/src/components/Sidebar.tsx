@@ -42,7 +42,6 @@ const Sidebar = () => {
       label: "Library",
       path: "/library",
     },
-    { id: "Discover", icon: "explore", label: "Discover", path: "/discover" },
     {
       id: "Playlists",
       icon: "queue_music",
