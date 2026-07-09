@@ -120,7 +120,7 @@ export default function TrackOptionsMenu({
   const deleteMutation = useMutation({
     mutationFn: async () => {
       const url = playlistId
-        ? `/api/playlist/${playlistId}/track/${track._id}/remove`
+        ? `/api/playlist/remove/${playlistId}/track/${track._id}`
         : `/api/track/delete/${track._id}`;
       const res = await apiClient.delete(url, { withCredentials: true });
       return res.data;

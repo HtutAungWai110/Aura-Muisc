@@ -11,17 +11,21 @@ import { Spinner } from "./ui/spinner";
 import PhotoCropper from "./PhotoCropper";
 import { useRef } from "react";
 import { Music, Camera } from "lucide-react";
+import { useErrorStore } from "@/states/ErrorState";
+import { useSuccessStore } from "@/states/SuccessState";
 
 interface CoverPhotoDisplayProps {
   coverPhotoUrl: string | null;
   playlistId: string;
   isOnEditMode: boolean;
+  appendFile: (payload: File) => void | null;
 }
 
 export default function CoverPhotoDisplay({
   coverPhotoUrl,
   playlistId,
   isOnEditMode,
+  appendFile,
 }: CoverPhotoDisplayProps) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
@@ -30,6 +34,9 @@ export default function CoverPhotoDisplay({
 
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { setSuccessMessage } = useSuccessStore();
+  const { setError } = useErrorStore();
 
   const uploadCoverMutation = useMutation({
     mutationFn: async (formData: FormData) => {
@@ -46,8 +53,11 @@ export default function CoverPhotoDisplay({
       queryClient.invalidateQueries({ queryKey: [`Playlist ${playlistId}`] });
       const { updatedPlaylist } = data;
       updatePlaylist(playlistId, updatedPlaylist);
-
+      setSuccessMessage(data.message)
       setSelectedImage(null);
+    },
+    onError: (error) => {
+      setError(error.message);
     },
   });
 
@@ -59,6 +69,7 @@ export default function CoverPhotoDisplay({
         if (isOnEditMode) {
           const imageUrl = URL.createObjectURL(croppedFile);
           setCroppedImage(imageUrl);
+          appendFile(croppedFile)
           setSelectedImage(null);
         } else {
           const form = new FormData();

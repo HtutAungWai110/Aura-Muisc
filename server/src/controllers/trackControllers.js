@@ -4,7 +4,7 @@ import path from "path";
 import fs from "fs/promises";
 import * as mm from "music-metadata";
 import AppError from "../lib/appError.js";
-import { supabase } from "../config/supabase.js";
+import { supabase, uploadFile, deleteFileByUrl } from "../config/supabase.js";
 
 const getTrackMetadata = async (filePath) => {
   return new Promise((resolve) => {
@@ -81,24 +81,8 @@ async function addTracks(req, res, next) {
             const extension = type.split("/")[1] || "jpg";
             const thumbnailFilename = `thumb-${Date.now()}-${index}.${extension}`;
 
-            const { data: thumbData, error: thumbError } =
-              await supabase.storage
-                .from("thumbnail-assets")
-                .upload(thumbnailFilename, imageBuffer, {
-                  contentType: type,
-                  upsert: true,
-                });
-
-            if (thumbError) throw thumbError;
-
-            if (thumbData) {
-              const {
-                data: { publicUrl },
-              } = supabase.storage
-                .from("thumbnail-assets")
-                .getPublicUrl(thumbnailFilename);
-              thumbnailUrl = publicUrl;
-            }
+            const { data, publicUrl } = await uploadFile("thumbnail-assets", thumbnailFilename, imageBuffer, type);
+            thumbnailUrl = publicUrl;
           } catch (thumbnailError) {
             console.warn(
               `Warning: Failed to save thumbnail from buffer:`,
@@ -108,19 +92,7 @@ async function addTracks(req, res, next) {
         }
 
         const audioFileName = `audio-${Date.now()}-${file.originalname}`;
-
-        const { data: audioData, error: audioError } = await supabase.storage
-          .from("music-assets")
-          .upload(audioFileName, file.buffer, {
-            contentType: file.mimetype,
-            upsert: true,
-          });
-
-        if (audioError) throw audioError;
-
-        const {
-          data: { publicUrl: audioFilePublicUrl },
-        } = supabase.storage.from("music-assets").getPublicUrl(audioFileName);
+        const { data, publicUrl: audioFilePublicUrl } = await uploadFile("music-assets", audioFileName, file.buffer, file.mimetype);
 
         const newTrack = new Track({
           title:
@@ -180,15 +152,7 @@ async function deleteTrack(req, res, next) {
     if (target.fileUrl) {
       // Extract filename from public URL for Supabase storage deletion
       try {
-        const urlParts = target.fileUrl.split('/');
-        let fileName = urlParts[urlParts.length - 1];
-        // Decode URL encoding (e.g., %20 -> space)
-        fileName = decodeURIComponent(fileName);
-        const { error: audioError } = await supabase.storage
-          .from('music-assets')
-          .remove([fileName]);
-
-        if (audioError) throw audioError;
+        await deleteFileByUrl("music-assets", target.fileUrl);
       } catch (err) {
         console.warn(`Failed to delete audio from Supabase storage:`, err.message);
       }

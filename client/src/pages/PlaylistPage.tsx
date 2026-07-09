@@ -27,6 +27,7 @@ export default function PlaylistPage() {
     }
   }, [initialData, id, queryClient]);
 
+
   const {
     data: playlistData,
     isLoading,
@@ -95,6 +96,7 @@ export default function PlaylistPage() {
         {/* Playlist Hero */}
         <div className="flex flex-col md:flex-row items-end gap-8 mb-10">
           <CoverPhotoDisplay
+          appendFile={null}
             isOnEditMode={false}
             coverPhotoUrl={playlistData.coverPhotoUrl}
             playlistId={playlistData._id}

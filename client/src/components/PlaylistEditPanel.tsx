@@ -1,13 +1,13 @@
-import { useEffect, useState } from "react";
-import type { Area } from "react-easy-crop";
-import { getCroppedImg } from "@/lib/cropImage";
-import { base64ToFile } from "@/lib/convertImage";
+import { useState, useRef, useEffect } from "react";
+
 import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
-import PhotoCropper from "@/components/PhotoCropper";
-import { Calendar, Check, X } from "lucide-react";
 import type { Playlist } from "@/types/PlaylistType";
 import CoverPhotoDisplay from "./CoverPhotoDisplay";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import apiClient from "@/lib/apiClient";
+import { useSuccessStore } from "@/states/SuccessState";
+import { useErrorStore } from "@/states/ErrorState";
+import { Spinner } from "./ui/spinner";
 
 interface PlaylistEditPanelProps {
   playlist: Playlist;
@@ -16,26 +16,83 @@ interface PlaylistEditPanelProps {
 
 export default function PlaylistEditPanel({
   playlist,
-  onClose,
+  onClose
 }: PlaylistEditPanelProps) {
-  const [isTitleEditMode, setIsTitleEditMode] = useState(false);
   const [titleInput, setTitleInput] = useState(playlist.title);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const formDataRef = useRef<FormData>(new FormData());
+  const queryClient = useQueryClient();
+  const { setSuccessMessage } = useSuccessStore();
+  const { setError } = useErrorStore();
 
-  const handleTitleClick = () => {
-    setTitleInput(playlist.title);
-    setIsTitleEditMode(true);
+  const handleAppendFile = (payload: File) => {
+    formDataRef.current.append("cover", payload)
   };
 
+  const updateMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiClient.post(`/api/playlist/update/${playlist._id}`, formDataRef.current, { withCredentials: true })
+      return res.data;
+    },
+    onSuccess: (data) => {
+      setSuccessMessage(data.message)
+      queryClient.invalidateQueries({ queryKey: [`Playlist ${playlist._id}`] });
+      onClose();
+    },
+    onError: (error) => {
+      setError(error.message);
+    },
+  });
+
+  const handleSave = () => {
+    if (titleInput.trim() === playlist.title && !formDataRef.current.get("cover")) {
+      onClose();
+      return;
+    }
+    if (titleInput.trim() && titleInput.trim() !== playlist.title) formDataRef.current.append("title", titleInput.trim());
+    updateMutation.mutate()
+  }
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+        onClose();
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [onClose]);
+
+
   return (
-    <div className="space-y-6 z-50 fixed top-0 left-0 w-full h-full flex items-center justify-center bg-background/50 ">
-      <div className="flex justify-between gap-5 bg-surface-container-highest rounded-2xl p-10">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/30 backdrop-blur-md space-y-6 p-4"
+
+
+    >
+      <div ref={panelRef} className="flex  justify-between gap-5 bg-surface-container-highest/80 backdrop-blur-sm border border-primary/20 rounded-2xl p-8  relative">
+
+        {/* Close icon (X) */}
+        <button
+          className="absolute top-2 right-2 text-on-surface-variant/hover text-sm hover:bg-primary/10 rounded-full p-1"
+          onClick={onClose}
+          aria-label="Close"
+        >
+          ×
+        </button>
         <CoverPhotoDisplay
           isOnEditMode={true}
           coverPhotoUrl={playlist.coverPhotoUrl}
           playlistId={playlist._id}
+          appendFile={handleAppendFile}
         />
         <div className="relative group ">
           <div className="space-y-3">
+            <div>
+              <p>Add cover photo or change playlist title</p>
+            </div>
             <input
               type="text"
               value={titleInput}
@@ -49,11 +106,18 @@ export default function PlaylistEditPanel({
                 variant="outline"
                 size="sm"
                 className="text-on-surface-variant hover:bg-primary/10"
+                onClick={onClose}
               >
                 Cancel
               </Button>
-              <Button variant="default" size="sm" disabled={!titleInput.trim()}>
+              <Button
+                disabled={!titleInput.trim() || updateMutation.isPending}
+                onClick={handleSave}
+                size="sm"
+                className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center gap-1"
+              >
                 Save
+                {updateMutation.isPending && <Spinner />}
               </Button>
             </div>
           </div>

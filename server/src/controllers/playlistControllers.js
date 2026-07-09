@@ -1,7 +1,7 @@
 import Playlist from "../models/playlist.js";
 import AppError from "../lib/appError.js";
 import Track from "../models/track.js";
-import { supabase } from "../config/supabase.js";
+import { supabase, uploadFile, deleteFileByUrl } from "../config/supabase.js";
 
 async function createPlaylist(req, res, next) {
   try {
@@ -135,32 +135,11 @@ async function updateCoverPhoto(req, res, next) {
   }
   try {
     if (existingPlaylist.coverPhotoUrl) {
-      const urlParts = existingPlaylist.coverPhotoUrl.split("/");
-      let fileName = urlParts[urlParts.length - 1];
-      // Decode URL encoding (e.g., %20 -> space)
-      fileName = decodeURIComponent(fileName);
-      const { error: coverError } = await supabase.storage
-        .from("playlist-cover-assets")
-        .remove([fileName]);
-
-      if (coverError) throw coverError;
+      await deleteFileByUrl("playlist-cover-assets", existingPlaylist.coverPhotoUrl);
     }
 
     const fileName = `cover-${Date.now()}-${req.file.originalname}`;
-    const { data, error } = await supabase.storage
-      .from("playlist-cover-assets")
-      .upload(fileName, req.file.buffer, {
-        contentType: req.file.mimetype,
-        upsert: true,
-      });
-
-    if (error) {
-      throw new Error(error.message);
-    }
-
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from("playlist-cover-assets").getPublicUrl(fileName);
+    const { data, publicUrl } = await uploadFile("playlist-cover-assets", fileName, req.file.buffer, req.file.mimetype);
     const updatedPlaylist = await Playlist.findOneAndUpdate(
       {
         _id: id,
@@ -229,22 +208,7 @@ async function deletePlaylist(req, res, next) {
 
     // Delete cover photo from Supabase storage if it exists
     if (targetPlaylist.coverPhotoUrl) {
-      try {
-        const urlParts = targetPlaylist.coverPhotoUrl.split("/");
-        let fileName = urlParts[urlParts.length - 1];
-        // Decode URL encoding (e.g., %20 -> space)
-        fileName = decodeURIComponent(fileName);
-        const { error: coverError } = await supabase.storage
-          .from("playlist-cover-assets")
-          .remove([fileName]);
-
-        if (coverError) throw coverError;
-      } catch (err) {
-        console.warn(
-          `Failed to delete cover photo from Supabase storage:`,
-          err.message,
-        );
-      }
+      await deleteFileByUrl("playlist-cover-assets", targetPlaylist.coverPhotoUrl);
     }
 
     await Playlist.deleteOne({ _id: id });
@@ -259,6 +223,68 @@ async function deletePlaylist(req, res, next) {
   }
 }
 
+async function updatePlaylist(req, res, next) {
+  const { id } = req.params;
+  const userId = req.userId;
+  const { title } = req.body;
+
+  try {
+    // Find the playlist by id and userId
+    const playlist = await Playlist.findOne({
+      _id: id,
+      userId: userId,
+    });
+
+    if (!playlist) {
+      return next(new AppError("Playlist not found", 404));
+    }
+
+    // Prepare update data
+    const updateData = {};
+
+    // Handle cover photo upload if req.file exists
+    if (req.file) {
+      // If there's an existing cover photo, delete it
+      if (playlist.coverPhotoUrl) {
+        await deleteFileByUrl("playlist-cover-assets", playlist.coverPhotoUrl);
+      }
+
+      // Prepare the file name and upload
+      const fileName = `cover-${Date.now()}-${req.file.originalname}`;
+      const { data, publicUrl } = await uploadFile(
+        "playlist-cover-assets",
+        fileName,
+        req.file.buffer,
+        req.file.mimetype
+      );
+
+      updateData.coverPhotoUrl = publicUrl;
+    }
+
+    // Handle title update if provided
+    if (title !== undefined && title !== null && title.trim() !== "") {
+      updateData.title = title.trim();
+    }
+
+    // If there's nothing to update, return the existing playlist
+    if (Object.keys(updateData).length === 0) {
+      return res.status(200).json({ message: "Playlist updated successfully" });
+    }
+
+    // Update the playlist
+    const updatedPlaylist = await Playlist.findOneAndUpdate(
+      { _id: id, userId: userId },
+      { $set: updateData },
+      { new: true, runValidators: true }
+    );
+
+    return res.status(200).json({ message: "Playlist updated successfully" });
+  } catch (error) {
+    console.error("Failed to update playlist: ", error.message);
+    return next(new AppError("Failed to update playlist. Try again later.", 500));
+  }
+}
+
 export {
   createPlaylist,
   getAllPlaylists,
@@ -267,4 +293,5 @@ export {
   updateCoverPhoto,
   removeTrackFromPlaylist,
   deletePlaylist,
+  updatePlaylist
 };

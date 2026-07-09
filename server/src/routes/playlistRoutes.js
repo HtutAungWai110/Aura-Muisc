@@ -7,6 +7,7 @@ import {
   updateCoverPhoto,
   removeTrackFromPlaylist,
   deletePlaylist,
+  updatePlaylist
 } from "../controllers/playlistControllers.js";
 import validationMiddleware from "../middleware/ValidationMiddleware.js";
 import paramValidationMiddleware from "../middleware/paramValidationMiddleware.js";
@@ -57,8 +58,16 @@ router.post(
   updateCoverPhoto,
 );
 
+router.post(
+  "/update/:id",
+  authMiddleware,
+  paramValidationMiddleware(playlistIdSchema),
+  upload.single("cover"),
+  updatePlaylist
+);
+
 router.delete(
-  "/:id/track/:trackId/remove",
+  "/remove/:id/track/:trackId",
   authMiddleware,
   paramValidationMiddleware(playlistAndTrackIdSchema),
   removeTrackFromPlaylist,
