@@ -33,7 +33,6 @@ function PlaylistSubMenu({ track, onClose, position }: PlaylistSubMenuProps) {
       const res = await apiClient.post(
         `/api/playlist/${id}/add/${track._id}`,
         {},
-        { withCredentials: true },
       );
       return res.data;
     },
@@ -122,7 +121,7 @@ export default function TrackOptionsMenu({
       const url = playlistId
         ? `/api/playlist/remove/${playlistId}/track/${track._id}`
         : `/api/track/delete/${track._id}`;
-      const res = await apiClient.delete(url, { withCredentials: true });
+      const res = await apiClient.delete(url);
       return res.data;
     },
     onSuccess: () => {

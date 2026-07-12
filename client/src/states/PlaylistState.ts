@@ -25,9 +25,7 @@ export const usePlaylistStore = create<PlaylistStore>((set, get) => ({
   error: null,
   fetchPlaylists: async () => {
     try {
-      const res = await apiClient.get("/api/playlist/all", {
-        withCredentials: true,
-      });
+      const res = await apiClient.get("/api/playlist/all");
       set({ playlists: res.data, isPending: false });
     } catch (_) {
       set({ isPending: false });

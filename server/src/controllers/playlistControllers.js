@@ -266,11 +266,6 @@ async function updatePlaylist(req, res, next) {
       updateData.title = title.trim();
     }
 
-    // If there's nothing to update, return the existing playlist
-    if (Object.keys(updateData).length === 0) {
-      return res.status(200).json({ message: "Playlist updated successfully" });
-    }
-
     // Update the playlist
     const updatedPlaylist = await Playlist.findOneAndUpdate(
       { _id: id, userId: userId },
@@ -278,7 +273,7 @@ async function updatePlaylist(req, res, next) {
       { new: true, runValidators: true }
     );
 
-    return res.status(200).json({ message: "Playlist updated successfully" });
+    return res.status(200).json({ message: "Playlist updated successfully", playlist: updatedPlaylist });
   } catch (error) {
     console.error("Failed to update playlist: ", error.message);
     return next(new AppError("Failed to update playlist. Try again later.", 500));

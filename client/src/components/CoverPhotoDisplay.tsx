@@ -43,9 +43,6 @@ export default function CoverPhotoDisplay({
       const res = await apiClient.post(
         `/api/playlist/${playlistId}/cover`,
         formData,
-        {
-          withCredentials: true,
-        },
       );
       return res.data;
     },

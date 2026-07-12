@@ -35,9 +35,7 @@ export default function PlaylistPage() {
   } = useQuery<Playlist>({
     queryKey: [`Playlist ${id}`],
     queryFn: async () => {
-      const res = await apiClient.get(`/api/playlist/${id}`, {
-        withCredentials: true,
-      });
+      const res = await apiClient.get(`/api/playlist/${id}`);
 
       return res.data;
     },
@@ -60,7 +58,7 @@ export default function PlaylistPage() {
 
   if (isLoading && !playlistData) {
     return (
-      <div className="ml-80 min-h-screen flex items-center justify-center">
+      <div className="md:ml-80 min-h-screen flex items-center justify-center">
         <Spinner className="size-8 text-primary" />
       </div>
     );
@@ -68,7 +66,7 @@ export default function PlaylistPage() {
 
   if (isError || !playlistData) {
     return (
-      <div className="ml-80 min-h-screen flex items-center justify-center">
+      <div className="md:ml-80 min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-on-surface mb-2">Oops!</h2>
           <p className="text-on-surface-variant">
@@ -85,14 +83,14 @@ export default function PlaylistPage() {
   );
 
   return (
-    <div className="ml-80 min-h-screen flex flex-col overflow-hidden bg-background">
+    <div className="md:ml-80 min-h-screen flex flex-col overflow-hidden bg-background">
       {isEditing && (
         <PlaylistEditPanel
           onClose={() => setIsEditing(false)}
           playlist={playlistData}
         />
       )}
-      <div className="p-container-padding-desktop pt-12">
+      <div className="p-container-padding-mobile md:p-container-padding-desktop pt-12">
         {/* Playlist Hero */}
         <div className="flex flex-col md:flex-row items-end gap-8 mb-10">
           <CoverPhotoDisplay

@@ -16,9 +16,7 @@ export default function Library() {
   const { data: tracks, isLoading } = useQuery({
     queryKey: ["Tracks"],
     queryFn: async () => {
-      const res = await apiClient.get("/api/track/all", {
-        withCredentials: true,
-      });
+      const res = await apiClient.get("/api/track/all");
       return res.data;
     },
     retryOnMount: false,
@@ -30,7 +28,7 @@ export default function Library() {
   }, [mode]);
 
   return (
-    <main className="ml-80 min-h-screen p-container-padding-desktop flex flex-col items-center justify-start relative overflow-hidden pb-32">
+    <main className="md:ml-80 min-h-screen p-container-padding-mobile md:p-container-padding-desktop flex flex-col items-center justify-start relative overflow-hidden pb-32">
       <div className="absolute top-0 left-0 w-full h-full -z-10 bg-surface">
         <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px]"></div>
         <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-secondary-container/20 rounded-full blur-[100px]"></div>

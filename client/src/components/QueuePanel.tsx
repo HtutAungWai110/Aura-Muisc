@@ -18,8 +18,8 @@ export default function QueuePanel({ onClose }: QueuePanelProps) {
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       // Check if the click target is outside the panel
-      // Also ensure we don't close it if clicking the queue button itself, 
-      // but since the queue button handles toggle itself, stopping event propagation 
+      // Also ensure we don't close it if clicking the queue button itself,
+      // but since the queue button handles toggle itself, stopping event propagation
       // or letting it check if the click hits the panel is standard.
       if (panelRef.current && !panelRef.current.contains(event.target as Node)) {
         // To prevent immediate closing if the click was on the toggle button itself (which triggers AudioPlayer state),
@@ -36,9 +36,9 @@ export default function QueuePanel({ onClose }: QueuePanelProps) {
   }, [onClose]);
 
   return (
-    <div 
+    <div
       ref={panelRef}
-      className="fixed right-8 bottom-28 w-80 max-h-[70vh] bg-surface-container/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl flex flex-col z-[110] overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300"
+      className="fixed right-8 bottom-[160px] md:bottom-28 w-80 max-h-[70vh] bg-surface-container/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl flex flex-col z-[110] overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300"
     >
       <div className="p-4 border-b border-white/5 flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -57,7 +57,7 @@ export default function QueuePanel({ onClose }: QueuePanelProps) {
           {currentTrack ? (
             <div className="flex items-center gap-3 p-2 rounded-lg bg-primary/10 border border-primary/20">
               {currentTrack.thumbnailUrl ? (
-                <img src={`/api/${currentTrack.thumbnailUrl}`} className="size-10 rounded object-cover shadow-sm" alt="" />
+                <img src={currentTrack.thumbnailUrl} className="size-10 rounded object-cover shadow-sm" alt="" />
               ) : (
                 <div className="size-10 rounded bg-surface-variant flex items-center justify-center text-lg">🎵</div>
               )}
@@ -86,7 +86,7 @@ export default function QueuePanel({ onClose }: QueuePanelProps) {
                   className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors group text-left"
                 >
                   {track.thumbnailUrl ? (
-                    <img src={`/api/${track.thumbnailUrl}`} className="size-10 rounded object-cover" alt="" />
+                    <img src={track.thumbnailUrl} className="size-10 rounded object-cover" alt="" />
                   ) : (
                     <div className="size-10 rounded bg-surface-variant flex items-center justify-center">🎵</div>
                   )}

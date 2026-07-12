@@ -4,6 +4,7 @@ import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import User from "../models/user.js";
 import { generateToken } from "../lib/generateToken.js";
+import jwt from "jsonwebtoken";
 
 const router = express.Router();
 config();
@@ -24,7 +25,6 @@ passport.use(
         });
 
         if (user) {
-          // User exists, pass them to the next middleware step
           return done(null, user);
         }
 
@@ -53,31 +53,92 @@ router.get(
 router.get(
   "/google/callback",
   passport.authenticate("google", {
-    failureRedirect: "/auth/login?error=failed'",
+    failureRedirect: "/auth/login?error=failed",
   }),
   function (req, res) {
-    // Successful authentication, redirect home.
     const { accessToken, refreshToken } = generateToken(req.user);
-    res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 1000 * 60 * 60 * 1, // 1hour
-    });
 
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
-    });
-
-    res.redirect(`${process.env.REACT_URL}/`);
+    // Redirect with tokens in URL hash so the client can extract and store them
+    const clientUrl = process.env.REACT_URL;
+    res.redirect(
+      `${clientUrl}/auth/callback#accessToken=${encodeURIComponent(accessToken)}&refreshToken=${encodeURIComponent(refreshToken)}`,
+    );
   },
 );
 
+// POST /auth/refresh — exchange refresh token for new access token
+router.post("/refresh", async (req, res) => {
+  const { refreshToken } = req.body;
+
+  if (!refreshToken) {
+    return res.status(401).json({ message: "Refresh token required" });
+  }
+
+  try {
+    const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.userId);
+    if (!user) {
+      return res.status(401).json({ message: "User not found" });
+    }
+
+    const tokens = generateToken(user);
+
+    // Set new access token as non-httpOnly cookie
+    res.cookie("accessToken", tokens.accessToken, {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 1000 * 60 * 60, // 1 hour
+      path: "/",
+    });
+
+    // Set new refresh token as non-httpOnly cookie
+    res.cookie("refreshToken", tokens.refreshToken, {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+      path: "/",
+    });
+
+    return res.json({
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+    });
+  } catch (error) {
+    return res.status(401).json({ message: "Invalid refresh token" });
+  }
+});
+
+// GET /auth/me — return current user from token (used after OAuth redirect)
+router.get("/me", async (req, res) => {
+  let accessToken = null;
+
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    accessToken = authHeader.slice(7);
+  }
+  if (!accessToken) {
+    accessToken = req.cookies?.accessToken;
+  }
+
+  if (!accessToken) {
+    return res.status(401).json({ message: "Unauthorized!" });
+  }
+
+  try {
+    const decoded = jwt.verify(accessToken, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.userId).select("-__v");
+    if (!user) {
+      return res.status(401).json({ message: "User not found" });
+    }
+    return res.json(user);
+  } catch {
+    return res.status(401).json({ message: "Invalid token" });
+  }
+});
+
 passport.serializeUser((user, done) => {
-  // Use user._id or user.id depending on your Mongoose setup
   done(null, user._id);
 });
 

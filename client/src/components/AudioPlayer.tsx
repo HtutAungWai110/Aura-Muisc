@@ -10,11 +10,13 @@ import {
   Shuffle,
   Repeat,
   ListMusic,
+  ChevronDown,
 } from "lucide-react";
 import { Slider } from "./ui/slider"; // Assuming there is a slider in ui/
 import { Button } from "./ui/button";
 import { formatDuration } from "@/lib/utils";
 import { useCallback } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import QueuePanel from "./QueuePanel";
 
 export default function AudioPlayer() {
@@ -38,6 +40,16 @@ export default function AudioPlayer() {
   const [duration, setDuration] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
   const [isQueueOpen, setIsQueueOpen] = useState(false);
+  const [isFullScreen, setIsFullScreen] = useState(false);
+
+  useEffect(() => {
+    if (isFullScreen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [isFullScreen]);
   useEffect(() => {
     if (audioRef.current) {
       if (isPlaying) {
@@ -173,149 +185,321 @@ export default function AudioPlayer() {
   if (!currentTrack) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 h-24 bg-surface-container/80 backdrop-blur-xl border-t border-white/5 z-[100] px-8 flex items-center justify-between">
-      <audio
-        ref={audioRef}
-        src={`${currentTrack.fileUrl}`}
-        onTimeUpdate={handleTimeUpdate}
-        onLoadedMetadata={handleLoadedMetadata}
-        onEnded={playNext}
-        onPlay={() => setIsPlaying(true)}
-        onPause={() => setIsPlaying(false)}
-      />
+    <>
+      <div className="fixed left-0 right-0 bottom-[84px] md:bottom-0 z-[100]">
+        <audio
+          ref={audioRef}
+          src={`${currentTrack.fileUrl}`}
+          onTimeUpdate={handleTimeUpdate}
+          onLoadedMetadata={handleLoadedMetadata}
+          onEnded={playNext}
+          onPlay={() => setIsPlaying(true)}
+          onPause={() => setIsPlaying(false)}
+        />
 
-      {/* Track Info */}
-      <div className="flex items-center gap-4 w-1/3">
-        {currentTrack.thumbnailUrl ? (
-          <img
-            src={`${currentTrack.thumbnailUrl}`}
-            alt={currentTrack.title}
-            className="size-14 rounded-md object-cover shadow-lg"
-          />
-        ) : (
-          <div className="size-14 rounded-md bg-surface-variant flex items-center justify-center text-2xl shadow-lg">
-            🎵
+      {/* Pill (mobile) / Full bar (desktop) */}
+      <div
+        className={`mx-3 md:mx-0 rounded-full md:rounded-none bg-white/10 md:bg-surface-container/80 backdrop-blur-2xl md:backdrop-blur-xl border border-white/10 md:border-t md:border-white/5 shadow-2xl md:shadow-none h-12 md:h-24 px-3 md:px-8 flex items-center justify-between cursor-pointer md:cursor-default ${isFullScreen ? "md:flex hidden" : ""}`}
+        onClick={() => setIsFullScreen(true)}
+      >
+        {/* Track Info */}
+        <div className="flex items-center gap-2 md:gap-4 w-1/3 min-w-0">
+          {currentTrack.thumbnailUrl ? (
+            <img
+              src={`${currentTrack.thumbnailUrl}`}
+              alt={currentTrack.title}
+              className="size-8 md:size-14 rounded-md object-cover shadow-lg shrink-0"
+            />
+          ) : (
+            <div className="size-8 md:size-14 rounded-md bg-surface-variant flex items-center justify-center text-lg md:text-2xl shadow-lg shrink-0">
+              🎵
+            </div>
+          )}
+          <div className="flex flex-col min-w-0">
+            <span className="text-on-surface font-bold truncate text-xs md:text-base">
+              {currentTrack.title}
+            </span>
+            <span className="text-on-surface-variant text-[10px] md:text-sm truncate">
+              {currentTrack.artist}
+            </span>
           </div>
-        )}
-        <div className="flex flex-col min-w-0">
-          <span className="text-on-surface font-bold truncate">
-            {currentTrack.title}
-          </span>
-          <span className="text-on-surface-variant text-sm truncate">
-            {currentTrack.artist}
-          </span>
         </div>
-      </div>
 
-      {/* Controls */}
-      <div className="flex flex-col items-center gap-2 w-1/3">
-        <div className="flex items-center gap-6">
+        {/* Controls */}
+        <div className="flex flex-col items-center gap-0 md:gap-2 w-1/3">
+          <div className="flex items-center gap-1 md:gap-6">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => { e.stopPropagation(); toggleShuffle(); }}
+              className={`transition-colors hidden md:flex ${
+                mode === Mode.shuffle ? "text-primary" : "hover:text-primary"
+              }`}
+            >
+              <Shuffle className="size-5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => { e.stopPropagation(); prevTrack(); }}
+              className="hover:text-primary transition-colors"
+            >
+              <SkipBack className="size-3 md:size-6 fill-current" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-7 md:size-10 rounded-full bg-white hover:scale-105 transition-transform"
+              onClick={(e) => { e.stopPropagation(); togglePlay(); }}
+            >
+              {isPlaying ? (
+                <Pause className="size-4 md:size-6 text-black/80 fill-black/80" />
+              ) : (
+                <Play className="size-4 md:size-6 text-black/80 fill-black/80" />
+              )}
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => { e.stopPropagation(); nextTrack(); }}
+              className="hover:text-primary transition-colors"
+            >
+              <SkipForward className="size-3 md:size-6 fill-current" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => { e.stopPropagation(); toggleLoop(); }}
+              className={`transition-colors hidden md:flex ${
+                isLooping ? "text-primary" : "hover:text-primary"
+              }`}
+            >
+              <Repeat className="size-5" />
+            </Button>
+          </div>
+
+          <div className="hidden md:flex items-center gap-3 w-full max-w-md">
+            <span className="text-[10px] text-on-surface-variant w-10 text-right font-mono">
+              {formatDuration(currentTime)}
+            </span>
+            <Slider
+              value={[currentTime]}
+              max={duration || 100}
+              step={1}
+              onValueChange={handleProgressChange}
+              className="flex-1"
+            />
+            <span className="text-[10px] text-on-surface-variant w-10 font-mono">
+              {formatDuration(duration)}
+            </span>
+          </div>
+        </div>
+
+        {/* Volume */}
+        <div className="flex items-center justify-end gap-1 md:gap-3 w-1/3">
           <Button
             variant="ghost"
             size="icon"
-            onClick={toggleShuffle}
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsQueueOpen(!isQueueOpen);
+            }}
             className={`transition-colors ${
-              mode === Mode.shuffle ? "text-primary" : "hover:text-primary"
+              isQueueOpen
+                ? "text-primary"
+                : "text-on-surface-variant hover:text-primary"
             }`}
           >
-            <Shuffle className="size-5" />
+            <ListMusic className="size-3.5 md:size-5" />
           </Button>
           <Button
             variant="ghost"
             size="icon"
-            onClick={prevTrack}
-            className="hover:text-primary transition-colors"
+            onClick={(e) => { e.stopPropagation(); setIsMuted(!isMuted); }}
+            className="text-on-surface-variant"
           >
-            <SkipBack className="size-6 fill-current" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="size-10 rounded-full bg-white hover:scale-105 transition-transform"
-            onClick={togglePlay}
-          >
-            {isPlaying ? (
-              <Pause className="size-6 text-black/80 fill-black/80" />
+            {isMuted || volume === 0 ? (
+              <VolumeX className="size-3.5 md:size-5" />
             ) : (
-              <Play className="size-6 text-black/80 fill-black/80" />
+              <Volume2 className="size-3.5 md:size-5" />
             )}
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={nextTrack}
-            className="hover:text-primary transition-colors"
-          >
-            <SkipForward className="size-6 fill-current" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleLoop}
-            className={`transition-colors ${
-              isLooping ? "text-primary" : "hover:text-primary"
-            }`}
-          >
-            <Repeat className="size-5" />
-          </Button>
-        </div>
-
-        <div className="flex items-center gap-3 w-full max-w-md">
-          <span className="text-[10px] text-on-surface-variant w-10 text-right font-mono">
-            {formatDuration(currentTime)}
-          </span>
           <Slider
-            value={[currentTime]}
-            max={duration || 100}
-            step={1}
-            onValueChange={handleProgressChange}
-            className="flex-1"
+            value={[isMuted ? 0 : volume]}
+            max={1}
+            step={0.01}
+            onValueChange={handleVolumeChange}
+            className="w-14 md:w-24"
           />
-          <span className="text-[10px] text-on-surface-variant w-10 font-mono">
-            {formatDuration(duration)}
-          </span>
         </div>
-      </div>
-
-      {/* Volume */}
-      <div className="flex items-center justify-end gap-3 w-1/3">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsQueueOpen(!isQueueOpen);
-          }}
-          className={`transition-colors ${
-            isQueueOpen
-              ? "text-primary"
-              : "text-on-surface-variant hover:text-primary"
-          }`}
-        >
-          <ListMusic className="size-5" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setIsMuted(!isMuted)}
-          className="text-on-surface-variant"
-        >
-          {isMuted || volume === 0 ? (
-            <VolumeX className="size-5" />
-          ) : (
-            <Volume2 className="size-5" />
-          )}
-        </Button>
-        <Slider
-          value={[isMuted ? 0 : volume]}
-          max={1}
-          step={0.01}
-          onValueChange={handleVolumeChange}
-          className="w-24"
-        />
       </div>
 
       {isQueueOpen && <QueuePanel onClose={() => setIsQueueOpen(false)} />}
     </div>
+
+      {/* Mobile Full-Screen Player */}
+      <AnimatePresence>
+        {isFullScreen && (
+          <motion.div
+            key="fullscreen-player"
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 28, stiffness: 300 }}
+            drag="y"
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={0.2}
+            onDragEnd={(_, info) => {
+              if (info.offset.y > 150) setIsFullScreen(false);
+            }}
+            className="md:hidden fixed inset-0 z-[999] bg-gradient-to-b from-surface-container to-background flex flex-col px-6 py-4 overflow-y-auto"
+          >
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <span className="text-on-surface-variant text-xs font-label-caps uppercase tracking-widest">
+              Now Playing
+            </span>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsFullScreen(false)}
+              className="text-on-surface-variant hover:text-on-surface size-10"
+            >
+              <ChevronDown className="size-8" />
+            </Button>
+          </div>
+
+          {/* Album Cover */}
+          <div className="flex-shrink-0 flex items-center justify-center py-4">
+            {currentTrack.thumbnailUrl ? (
+              <img
+                src={currentTrack.thumbnailUrl}
+                alt={currentTrack.title}
+                className="w-64 h-64 rounded-2xl object-cover shadow-2xl"
+              />
+            ) : (
+              <div className="w-64 h-64 rounded-2xl bg-surface-variant flex items-center justify-center text-6xl shadow-2xl">
+                🎵
+              </div>
+            )}
+          </div>
+
+          {/* Song Info */}
+          <div className="mt-4 mb-3 text-center">
+            <h2 className="text-on-surface font-bold text-xl truncate">
+              {currentTrack.title}
+            </h2>
+            <p className="text-on-surface-variant text-sm mt-1 truncate">
+              {currentTrack.artist}
+            </p>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-[10px] text-on-surface-variant w-10 text-right font-mono">
+              {formatDuration(currentTime)}
+            </span>
+            <Slider
+              value={[currentTime]}
+              max={duration || 100}
+              step={1}
+              onValueChange={handleProgressChange}
+              className="flex-1"
+            />
+            <span className="text-[10px] text-on-surface-variant w-10 font-mono">
+              {formatDuration(duration)}
+            </span>
+          </div>
+
+          {/* Controls */}
+          <div className="flex items-center justify-center gap-6 mb-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleShuffle}
+              className={`transition-colors ${
+                mode === Mode.shuffle ? "text-primary" : "hover:text-primary"
+              }`}
+            >
+              <Shuffle className="size-5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={prevTrack}
+              className="hover:text-primary transition-colors"
+            >
+              <SkipBack className="size-6 fill-current" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-14 rounded-full bg-white hover:scale-105 transition-transform"
+              onClick={togglePlay}
+            >
+              {isPlaying ? (
+                <Pause className="size-7 text-black/80 fill-black/80" />
+              ) : (
+                <Play className="size-7 text-black/80 fill-black/80" />
+              )}
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={nextTrack}
+              className="hover:text-primary transition-colors"
+            >
+              <SkipForward className="size-6 fill-current" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleLoop}
+              className={`transition-colors ${
+                isLooping ? "text-primary" : "hover:text-primary"
+              }`}
+            >
+              <Repeat className="size-5" />
+            </Button>
+          </div>
+
+          {/* Volume & Queue */}
+          <div className="flex items-center justify-center gap-4 pb-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsQueueOpen(!isQueueOpen)}
+              className={`transition-colors ${
+                isQueueOpen
+                  ? "text-primary"
+                  : "text-on-surface-variant hover:text-primary"
+              }`}
+            >
+              <ListMusic className="size-5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsMuted(!isMuted)}
+              className="text-on-surface-variant"
+            >
+              {isMuted || volume === 0 ? (
+                <VolumeX className="size-5" />
+              ) : (
+                <Volume2 className="size-5" />
+              )}
+            </Button>
+            <Slider
+              value={[isMuted ? 0 : volume]}
+              max={1}
+              step={0.01}
+              onValueChange={handleVolumeChange}
+              className="w-40"
+            />
+          </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }

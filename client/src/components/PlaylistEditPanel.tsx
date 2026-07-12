@@ -8,6 +8,7 @@ import apiClient from "@/lib/apiClient";
 import { useSuccessStore } from "@/states/SuccessState";
 import { useErrorStore } from "@/states/ErrorState";
 import { Spinner } from "./ui/spinner";
+import { usePlaylistStore } from "@/states/PlaylistState";
 
 interface PlaylistEditPanelProps {
   playlist: Playlist;
@@ -24,6 +25,7 @@ export default function PlaylistEditPanel({
   const queryClient = useQueryClient();
   const { setSuccessMessage } = useSuccessStore();
   const { setError } = useErrorStore();
+  const { updatePlaylist } = usePlaylistStore();
 
   const handleAppendFile = (payload: File) => {
     formDataRef.current.append("cover", payload)
@@ -31,12 +33,13 @@ export default function PlaylistEditPanel({
 
   const updateMutation = useMutation({
     mutationFn: async () => {
-      const res = await apiClient.post(`/api/playlist/update/${playlist._id}`, formDataRef.current, { withCredentials: true })
+      const res = await apiClient.post(`/api/playlist/update/${playlist._id}`, formDataRef.current)
       return res.data;
     },
     onSuccess: (data) => {
       setSuccessMessage(data.message)
       queryClient.invalidateQueries({ queryKey: [`Playlist ${playlist._id}`] });
+      updatePlaylist(playlist._id, data.playlist);
       onClose();
     },
     onError: (error) => {

@@ -21,9 +21,7 @@ export default function UploadTracksBtn() {
           formData.append("tracks", track.rawFile);
         });
 
-        const res = await apiClient.post("/api/track/add", formData, {
-          withCredentials: true,
-        });
+        const res = await apiClient.post("/api/track/add", formData);
         return res.data;
       } catch (error) {
         if (error.response) {

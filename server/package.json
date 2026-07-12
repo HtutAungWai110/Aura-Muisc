@@ -8,7 +8,8 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "dev": "nodemon ./src/server.js"
+    "dev": "nodemon ./src/server.js",
+    "start": "node ./src/server.js"
   },
   "dependencies": {
     "@supabase/server": "^1.3.0",

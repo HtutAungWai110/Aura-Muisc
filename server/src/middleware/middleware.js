@@ -4,7 +4,20 @@ import { config } from "dotenv";
 config();
 
 export default async function authMiddleware(req, res, next) {
-  const { accessToken, refreshToken } = req.cookies;
+  // Read from Authorization header first, fallback to cookies
+  let accessToken = null;
+  let refreshToken = null;
+
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    accessToken = authHeader.slice(7);
+  }
+
+  // Fallback: read from cookies (same-origin dev, or refresh endpoint)
+  if (!accessToken) {
+    accessToken = req.cookies?.accessToken;
+  }
+  refreshToken = req.cookies?.refreshToken;
 
   if (!accessToken && !refreshToken) {
     return res.status(401).json({
@@ -19,7 +32,6 @@ export default async function authMiddleware(req, res, next) {
       return next();
     }
   } catch (error) {
-    // If accessToken is expired or invalid, continue to check refreshToken
     if (!refreshToken) {
       return res.status(401).json({
         message: "Unauthorized!",
@@ -49,10 +61,11 @@ export default async function authMiddleware(req, res, next) {
       );
 
       res.cookie("accessToken", newAccessToken, {
-        httpOnly: true,
+        httpOnly: false,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
         maxAge: 1000 * 60 * 60, // 1 hour
+        path: "/",
       });
 
       req.userId = user._id;

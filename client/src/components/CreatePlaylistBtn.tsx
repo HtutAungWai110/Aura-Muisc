@@ -27,9 +27,6 @@ export default function CreatePlaylistBtn() {
       const res = await apiClient.post(
         "/api/playlist/create",
         { playlistTitle },
-        {
-          withCredentials: true,
-        },
       );
       return res.data;
     },

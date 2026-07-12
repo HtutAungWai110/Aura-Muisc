@@ -30,9 +30,6 @@ export default function PlaylistOptionsBox({
     mutationFn: async () => {
       const res = await apiClient.delete(
         `/api/playlist/delete/${playlist._id}`,
-        {
-          withCredentials: true,
-        },
       );
       return res.data;
     },

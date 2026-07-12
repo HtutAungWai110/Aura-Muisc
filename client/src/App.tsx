@@ -7,6 +7,7 @@ import PublicRoute from "./lib/publicRoute";
 import { useUser } from "./states/userState";
 import { useEffect } from "react";
 import PlaylistsPage from "./pages/PlaylistsPage";
+import AuthCallback from "./pages/AuthCallback";
 
 function App() {
   const { fetchUserData, userData } = useUser();
@@ -21,6 +22,8 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/auth/callback" element={<AuthCallback />} />
+
         <Route element={<PublicRoute />}>
           <Route path="/login" element={<Login />} />
         </Route>
