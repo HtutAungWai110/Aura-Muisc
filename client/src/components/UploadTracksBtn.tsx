@@ -50,7 +50,7 @@ export default function UploadTracksBtn() {
   const activePct = activeTrackId ? uploadProgress[activeTrackId] ?? 0 : 0;
 
   return (
-    <div className="flex justify-end gap-2">
+    <div className="flex justify-end gap-2 mb-5">
       <Button onClick={clearAudioTracks}>Clear All</Button>
       <Button
         className="flex justify-center items-center gap-1"

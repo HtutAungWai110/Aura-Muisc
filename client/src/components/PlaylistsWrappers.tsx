@@ -27,7 +27,7 @@ export default function PlaylistsWrapper() {
 
   if (!playlists || playlists.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 bg-white/5 rounded-2xl border border-dashed border-white/10">
+      <div className="flex flex-col items-center justify-center py-20 bg-white/5 rounded-2xl border border-dashed border-white/10 mt-5">
         <span className="material-symbols-outlined text-on-surface-variant/40 text-6xl mb-4">
           playlist_add
         </span>

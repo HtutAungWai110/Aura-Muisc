@@ -38,7 +38,7 @@ export default function QueuePanel({ onClose }: QueuePanelProps) {
   return (
     <div
       ref={panelRef}
-      className="fixed right-8 bottom-[160px] md:bottom-28 w-80 max-h-[70vh] bg-surface-container/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl flex flex-col z-[110] overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300"
+      className="fixed right-8 bottom-[160px] md:bottom-28 md:right-8 w-80 max-h-[70vh] bg-surface-container/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl flex flex-col z-[110] overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300 max-md:left-4 max-md:right-4 max-md:bottom-[120px] max-md:w-auto"
     >
       <div className="p-4 border-b border-white/5 flex items-center justify-between">
         <div className="flex items-center gap-2">

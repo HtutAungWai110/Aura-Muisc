@@ -464,7 +464,7 @@ export default function AudioPlayer() {
           </div>
 
           {/* Volume & Queue */}
-          <div className="flex items-center justify-center gap-4 pb-4">
+          <div className="flex items-center justify-center gap-4 pb-4 mt-auto">
             <Button
               variant="ghost"
               size="icon"

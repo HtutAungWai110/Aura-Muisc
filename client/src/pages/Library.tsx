@@ -1,7 +1,5 @@
 import ImportTrackBtn from "@/components/ImportTrackBtn";
 import apiClient from "@/lib/apiClient";
-import ErrorMessage from "@/components/ErrorMessage";
-import SuccessMessage from "@/components/SuccessMessage";
 import TrackPreviewWrapper from "@/components/TrackPreviewsWrapper";
 import TracksWrapper from "@/components/TracksWrapper";
 import { useTrackImportsState } from "@/states/TrackImportsState";
@@ -12,7 +10,7 @@ import { useEffect } from "react";
 
 export default function Library() {
   const { previewTracks } = useTrackImportsState();
-  const { setCurrentTrack, setTracks, mode } = usePlaybackState();
+  const { mode } = usePlaybackState();
   const { data: tracks, isLoading } = useQuery({
     queryKey: ["Tracks"],
     queryFn: async () => {
@@ -34,7 +32,7 @@ export default function Library() {
         <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-secondary-container/20 rounded-full blur-[100px]"></div>
       </div>
 
-      <section className="max-w-4xl w-full">
+      <section className="w-full">
         <div className="mb-5">
           <h1 className="font-headline-xl text-headline-xl text-on-surface mb-2">
             Sonic Immersion

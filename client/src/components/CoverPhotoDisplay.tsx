@@ -134,7 +134,7 @@ export default function CoverPhotoDisplay({
         </div>
       )}
 
-      <div className="size-56 md:size-64 rounded-xl shadow-2xl overflow-hidden flex-shrink-0 relative group">
+      <div className="size-40 md:size-64 rounded-xl shadow-2xl overflow-hidden flex-shrink-0 relative group">
         {coverPhotoUrl || croppedImage ? (
           <img
             src={croppedImage ? croppedImage : coverPhotoUrl}

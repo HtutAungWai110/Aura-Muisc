@@ -19,7 +19,7 @@ export default function PlaylistsPage() {
           </p>
         </div>
 
-        <div className="flex justify-start w-[400px]">
+        <div className="flex justify-start max-w-[400px] w-full">
           <CreatePlaylistBtn />
         </div>
 
