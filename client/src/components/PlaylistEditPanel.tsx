@@ -17,27 +17,30 @@ interface PlaylistEditPanelProps {
 
 export default function PlaylistEditPanel({
   playlist,
-  onClose
+  onClose,
 }: PlaylistEditPanelProps) {
   const [titleInput, setTitleInput] = useState(playlist.title);
+  const [coverPhotoUrl, setCoverPhotoUrl] = useState<string | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  const formDataRef = useRef<FormData>(new FormData());
   const queryClient = useQueryClient();
   const { setSuccessMessage } = useSuccessStore();
   const { setError } = useErrorStore();
   const { updatePlaylist } = usePlaylistStore();
 
-  const handleAppendFile = (payload: File) => {
-    formDataRef.current.append("cover", payload)
+  const handleCoverUploaded = (url: string) => {
+    setCoverPhotoUrl(url);
   };
 
   const updateMutation = useMutation({
-    mutationFn: async () => {
-      const res = await apiClient.post(`/api/playlist/update/${playlist._id}`, formDataRef.current)
+    mutationFn: async (body: Record<string, string>) => {
+      const res = await apiClient.post(
+        `/api/playlist/update/${playlist._id}`,
+        body,
+      );
       return res.data;
     },
     onSuccess: (data) => {
-      setSuccessMessage(data.message)
+      setSuccessMessage(data.message);
       queryClient.invalidateQueries({ queryKey: [`Playlist ${playlist._id}`] });
       updatePlaylist(playlist._id, data.playlist);
       onClose();
@@ -48,13 +51,19 @@ export default function PlaylistEditPanel({
   });
 
   const handleSave = () => {
-    if (titleInput.trim() === playlist.title && !formDataRef.current.get("cover")) {
+    const body: Record<string, string> = {};
+    if (titleInput.trim() && titleInput.trim() !== playlist.title) {
+      body.title = titleInput.trim();
+    }
+    if (coverPhotoUrl) {
+      body.coverPhotoUrl = coverPhotoUrl;
+    }
+    if (Object.keys(body).length === 0) {
       onClose();
       return;
     }
-    if (titleInput.trim() && titleInput.trim() !== playlist.title) formDataRef.current.append("title", titleInput.trim());
-    updateMutation.mutate()
-  }
+    updateMutation.mutate(body);
+  };
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -68,16 +77,12 @@ export default function PlaylistEditPanel({
     };
   }, [onClose]);
 
-
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-background/30 backdrop-blur-md space-y-6 p-4"
-
-
-    >
-      <div ref={panelRef} className="flex  justify-between gap-5 bg-surface-container-highest/80 backdrop-blur-sm border border-primary/20 rounded-2xl p-8  relative">
-
-        {/* Close icon (X) */}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/30 backdrop-blur-md space-y-6 p-4">
+      <div
+        ref={panelRef}
+        className="flex justify-between gap-5 bg-surface-container-highest/80 backdrop-blur-sm border border-primary/20 rounded-2xl p-8 relative"
+      >
         <button
           className="absolute top-2 right-2 text-on-surface-variant/hover text-sm hover:bg-primary/10 rounded-full p-1"
           onClick={onClose}
@@ -89,9 +94,9 @@ export default function PlaylistEditPanel({
           isOnEditMode={true}
           coverPhotoUrl={playlist.coverPhotoUrl}
           playlistId={playlist._id}
-          appendFile={handleAppendFile}
+          onCoverUploaded={handleCoverUploaded}
         />
-        <div className="relative group ">
+        <div className="relative group">
           <div className="space-y-3">
             <div>
               <p>Add cover photo or change playlist title</p>
