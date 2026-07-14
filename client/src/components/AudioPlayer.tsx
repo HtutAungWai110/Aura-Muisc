@@ -64,37 +64,42 @@ export default function AudioPlayer() {
 
   const handleShortcut = useCallback(
     (e: KeyboardEvent) => {
-      e.preventDefault();
+      const target = e.target as HTMLElement;
+      const isInput =
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable;
+
+      if (isInput) return;
+
       if (audioRef.current) {
         if (e.ctrlKey && e.key === "ArrowRight") {
+          e.preventDefault();
           nextTrack();
         }
         if (e.ctrlKey && e.key === "ArrowLeft") {
+          e.preventDefault();
           prevTrack();
         }
         if (e.key === " ") {
+          e.preventDefault();
           togglePlay();
         }
 
-        // New shortcuts
         if (e.shiftKey && e.key === "ArrowRight") {
           e.preventDefault();
-          if (audioRef.current) {
-            const newTime = Math.min(
-              audioRef.current.currentTime + 5,
-              audioRef.current.duration,
-            );
-            audioRef.current.currentTime = newTime;
-            setCurrentTime(newTime);
-          }
+          const newTime = Math.min(
+            audioRef.current.currentTime + 5,
+            audioRef.current.duration,
+          );
+          audioRef.current.currentTime = newTime;
+          setCurrentTime(newTime);
         }
         if (e.shiftKey && e.key === "ArrowLeft") {
           e.preventDefault();
-          if (audioRef.current) {
-            const newTime = Math.max(audioRef.current.currentTime - 5, 0);
-            audioRef.current.currentTime = newTime;
-            setCurrentTime(newTime);
-          }
+          const newTime = Math.max(audioRef.current.currentTime - 5, 0);
+          audioRef.current.currentTime = newTime;
+          setCurrentTime(newTime);
         }
         if (e.key === "ArrowUp") {
           e.preventDefault();
@@ -334,8 +339,9 @@ export default function AudioPlayer() {
         </div>
       </div>
 
-      {isQueueOpen && <QueuePanel onClose={() => setIsQueueOpen(false)} />}
     </div>
+
+      {isQueueOpen && <QueuePanel onClose={() => setIsQueueOpen(false)} />}
 
       {/* Mobile Full-Screen Player */}
       <AnimatePresence>
@@ -352,7 +358,7 @@ export default function AudioPlayer() {
             onDragEnd={(_, info) => {
               if (info.offset.y > 150) setIsFullScreen(false);
             }}
-            className="md:hidden fixed inset-0 z-[999] bg-gradient-to-b from-surface-container to-background flex flex-col px-6 py-4 overflow-y-auto"
+            className="md:hidden fixed inset-0 z-[300] bg-gradient-to-b from-surface-container to-background flex flex-col justify-between px-6 py-4 overflow-y-auto"
           >
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
@@ -369,102 +375,104 @@ export default function AudioPlayer() {
             </Button>
           </div>
 
-          {/* Album Cover */}
-          <div className="flex-shrink-0 flex items-center justify-center py-4">
-            {currentTrack.thumbnailUrl ? (
-              <img
-                src={currentTrack.thumbnailUrl}
-                alt={currentTrack.title}
-                className="w-64 h-64 rounded-2xl object-cover shadow-2xl"
-              />
-            ) : (
-              <div className="w-64 h-64 rounded-2xl bg-surface-variant flex items-center justify-center text-6xl shadow-2xl">
-                🎵
-              </div>
-            )}
-          </div>
-
-          {/* Song Info */}
-          <div className="mt-4 mb-3 text-center">
-            <h2 className="text-on-surface font-bold text-xl truncate">
-              {currentTrack.title}
-            </h2>
-            <p className="text-on-surface-variant text-sm mt-1 truncate">
-              {currentTrack.artist}
-            </p>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="flex items-center gap-3 mb-4">
-            <span className="text-[10px] text-on-surface-variant w-10 text-right font-mono">
-              {formatDuration(currentTime)}
-            </span>
-            <Slider
-              value={[currentTime]}
-              max={duration || 100}
-              step={1}
-              onValueChange={handleProgressChange}
-              className="flex-1"
-            />
-            <span className="text-[10px] text-on-surface-variant w-10 font-mono">
-              {formatDuration(duration)}
-            </span>
-          </div>
-
-          {/* Controls */}
-          <div className="flex items-center justify-center gap-6 mb-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleShuffle}
-              className={`transition-colors ${
-                mode === Mode.shuffle ? "text-primary" : "hover:text-primary"
-              }`}
-            >
-              <Shuffle className="size-5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={prevTrack}
-              className="hover:text-primary transition-colors"
-            >
-              <SkipBack className="size-6 fill-current" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-14 rounded-full bg-white hover:scale-105 transition-transform"
-              onClick={togglePlay}
-            >
-              {isPlaying ? (
-                <Pause className="size-7 text-black/80 fill-black/80" />
+          <div className="flex flex-col justify-center h-auto">
+            {/* Album Cover */}
+            <div className="flex-shrink-0 flex items-center justify-center py-4">
+              {currentTrack.thumbnailUrl ? (
+                <img
+                  src={currentTrack.thumbnailUrl}
+                  alt={currentTrack.title}
+                  className="w-64 h-64 rounded-2xl object-cover shadow-2xl"
+                />
               ) : (
-                <Play className="size-7 text-black/80 fill-black/80" />
+                <div className="w-64 h-64 rounded-2xl bg-surface-variant flex items-center justify-center text-6xl shadow-2xl">
+                  🎵
+                </div>
               )}
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={nextTrack}
-              className="hover:text-primary transition-colors"
-            >
-              <SkipForward className="size-6 fill-current" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleLoop}
-              className={`transition-colors ${
-                isLooping ? "text-primary" : "hover:text-primary"
-              }`}
-            >
-              <Repeat className="size-5" />
-            </Button>
+            </div>
+
+            {/* Song Info */}
+            <div className="mt-4 mb-3 text-center">
+              <h2 className="text-on-surface font-bold text-xl truncate">
+                {currentTrack.title}
+              </h2>
+              <p className="text-on-surface-variant text-sm mt-1 truncate">
+                {currentTrack.artist}
+              </p>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="flex items-center gap-3 mb-4">
+              <span className="text-[10px] text-on-surface-variant w-10 text-right font-mono">
+                {formatDuration(currentTime)}
+              </span>
+              <Slider
+                value={[currentTime]}
+                max={duration || 100}
+                step={1}
+                onValueChange={handleProgressChange}
+                className="flex-1"
+              />
+              <span className="text-[10px] text-on-surface-variant w-10 font-mono">
+                {formatDuration(duration)}
+              </span>
+            </div>
+
+            {/* Controls */}
+            <div className="flex items-center justify-center gap-6 mb-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleShuffle}
+                className={`transition-colors ${
+                  mode === Mode.shuffle ? "text-primary" : "hover:text-primary"
+                }`}
+              >
+                <Shuffle className="size-5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={prevTrack}
+                className="hover:text-primary transition-colors"
+              >
+                <SkipBack className="size-6 fill-current" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-14 rounded-full bg-white hover:scale-105 transition-transform"
+                onClick={togglePlay}
+              >
+                {isPlaying ? (
+                  <Pause className="size-7 text-black/80 fill-black/80" />
+                ) : (
+                  <Play className="size-7 text-black/80 fill-black/80" />
+                )}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={nextTrack}
+                className="hover:text-primary transition-colors"
+              >
+                <SkipForward className="size-6 fill-current" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleLoop}
+                className={`transition-colors ${
+                  isLooping ? "text-primary" : "hover:text-primary"
+                }`}
+              >
+                <Repeat className="size-5" />
+              </Button>
+            </div>
           </div>
 
           {/* Volume & Queue */}
-          <div className="flex items-center justify-center gap-4 pb-4">
+          <div className="flex items-center justify-center gap-4 mb-10 ">
             <Button
               variant="ghost"
               size="icon"

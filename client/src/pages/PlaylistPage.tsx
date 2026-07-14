@@ -66,7 +66,7 @@ export default function PlaylistPage() {
 
   if (isError || !playlistData) {
     return (
-      <div className="md:ml-80 min-h-screen flex items-center justify-center">
+      <div className="md:ml-80 min-h-screen flex items-center justify-center ">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-on-surface mb-2">Oops!</h2>
           <p className="text-on-surface-variant">
@@ -83,32 +83,35 @@ export default function PlaylistPage() {
   );
 
   return (
-    <div className="md:ml-80 min-h-screen flex flex-col overflow-hidden bg-background">
+    <div className="md:ml-80 min-h-screen flex flex-col items-center justify-start relative overflow-hidden pb-32">
+      <div className="absolute top-0 left-0 w-full h-full -z-10 bg-surface">
+        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px]"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-secondary-container/20 rounded-full blur-[100px]"></div>
+      </div>
+
       {isEditing && (
         <PlaylistEditPanel
           onClose={() => setIsEditing(false)}
           playlist={playlistData}
         />
       )}
-      <div className="p-container-padding-mobile md:p-container-padding-desktop pt-12">
+      <div className="w-full p-container-padding-mobile md:p-container-padding-desktop pt-12">
         {/* Playlist Hero */}
-        <div className="flex flex-col md:flex-row items-end gap-8 mb-10">
+        <div className="flex items-start gap-5 md:gap-8 mb-10">
           <CoverPhotoDisplay
-          appendFile={null}
             isOnEditMode={false}
             coverPhotoUrl={playlistData.coverPhotoUrl}
             playlistId={playlistData._id}
           />
-          <div className="flex flex-col gap-2 pb-2">
+          <div className="flex flex-col gap-0 md:gap-2 pb-2">
             <span className="font-label-caps text-label-caps text-primary uppercase tracking-[0.2em] mb-1">
               Playlist
             </span>
-            <h1 className="font-headline-xl text-headline-xl text-on-surface leading-none mb-6 tracking-tight">
+            <h1 className="font-headline-xl text-[1em] text-headline-xl text-on-surface leading-none mb-6 tracking-tight">
               {playlistData.title}
             </h1>
-            <div className="flex items-center gap-2 text-on-surface-variant font-body-sm bg-white/5 w-fit px-4 py-2 rounded-full backdrop-blur-md border border-white/5">
-              <span className="font-bold text-primary">You</span>
-              <span className="opacity-40">•</span>
+            <div className="flex items-center gap-2 text-[0.7em] md:text-[1em] text-on-surface-variant font-body-sm bg-white/5 w-fit px-4 py-2 rounded-full backdrop-blur-md border border-white/5">
+
               <span>{playlistData.tracks.length} tracks</span>
               <span className="opacity-40">•</span>
               <span className="flex items-center gap-1.5">
@@ -135,7 +138,7 @@ export default function PlaylistPage() {
 
         {/* Tracks List */}
         {playlistData.tracks.length > 0 ? (
-          <div className="bg-surface-container/30 backdrop-blur-md rounded-2xl border border-white/5 p-2 mb-12">
+          <div>
             <TracksWrapper tracks={playlistData.tracks} playlistId={id} />
           </div>
         ) : (

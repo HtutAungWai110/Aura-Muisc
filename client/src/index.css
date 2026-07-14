@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
+
 @theme {
     --color-on-surface-variant: #cfc2d6;
     --color-on-tertiary-container: #560038;

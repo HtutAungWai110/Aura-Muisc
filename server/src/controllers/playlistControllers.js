@@ -1,7 +1,10 @@
 import Playlist from "../models/playlist.js";
 import AppError from "../lib/appError.js";
 import Track from "../models/track.js";
-import { supabase, uploadFile, deleteFileByUrl } from "../config/supabase.js";
+import { supabase } from "../config/supabase.js";
+import { deleteStorageFile } from "../lib/storage.js";
+
+const BUCKET = "music-assets";
 
 async function createPlaylist(req, res, next) {
   try {
@@ -120,43 +123,126 @@ async function addTrackToPlaylist(req, res, next) {
   }
 }
 
+async function getCoverUploadUrl(req, res, next) {
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const { filename, fileType } = req.body;
+    if (!filename || !fileType) {
+      return res
+        .status(400)
+        .json({ message: "File information is required" });
+    }
+
+    const storagePath = `user-${userId}/${Date.now()}-${filename}`;
+
+    const { data, error } = await supabase.storage
+      .from("playlist-cover-assets")
+      .createSignedUploadUrl(storagePath, { upsert: true });
+
+    if (error) {
+      console.error("Error creating cover signed URL:", error);
+      throw error;
+    }
+
+    const supabaseUrl = process.env.SUPABASE_URL?.replace(/\/+$/, "");
+    const publicUrl = `${supabaseUrl}/storage/v1/object/public/playlist-cover-assets/${storagePath}`;
+
+    return res.status(200).json({
+      uploadUrl: data.signedUrl,
+      storagePath,
+      publicUrl,
+    });
+  } catch (error) {
+    console.error("Error generating cover upload URL:", error);
+    next(
+      new AppError(
+        "Failed to generate upload URL. Please try again.",
+        500,
+      ),
+    );
+  }
+}
+
 async function updateCoverPhoto(req, res, next) {
   const { id } = req.params;
   const userId = req.userId;
+  const { coverPhotoUrl } = req.body;
 
-  // First, find the playlist to get the current cover photo (if any)
-  const existingPlaylist = await Playlist.findOne({
-    _id: id,
-    userId: userId,
-  });
-
-  if (!existingPlaylist) {
-    return next(new AppError("Playlist not found", 404));
-  }
   try {
-    if (existingPlaylist.coverPhotoUrl) {
-      await deleteFileByUrl("playlist-cover-assets", existingPlaylist.coverPhotoUrl);
+    const existingPlaylist = await Playlist.findOne({
+      _id: id,
+      userId: userId,
+    });
+
+    if (!existingPlaylist) {
+      return next(new AppError("Playlist not found", 404));
     }
 
-    const fileName = `cover-${Date.now()}-${req.file.originalname}`;
-    const { data, publicUrl } = await uploadFile("playlist-cover-assets", fileName, req.file.buffer, req.file.mimetype);
+    if (existingPlaylist.coverPhotoUrl) {
+      await deleteStorageFile(existingPlaylist.coverPhotoUrl);
+    }
+
     const updatedPlaylist = await Playlist.findOneAndUpdate(
-      {
-        _id: id,
-        userId: userId,
-      },
-      {
-        $set: {
-          coverPhotoUrl: publicUrl,
-        },
-      },
+      { _id: id, userId: userId },
+      { $set: { coverPhotoUrl } },
       { new: true, runValidators: true },
     );
+
     res.json({ message: "Cover photo set successfully", updatedPlaylist });
   } catch (error) {
     console.error("Failed to update cover photo", error.message);
     return next(
-      new AppError("Failed to update cover photo. Try uploading later.", 500),
+      new AppError(
+        "Failed to update cover photo. Try uploading later.",
+        500,
+      ),
+    );
+  }
+}
+
+async function updatePlaylist(req, res, next) {
+  const { id } = req.params;
+  const userId = req.userId;
+  const { title, coverPhotoUrl } = req.body;
+
+  try {
+    const playlist = await Playlist.findOne({ _id: id, userId: userId });
+
+    if (!playlist) {
+      return next(new AppError("Playlist not found", 404));
+    }
+
+    const updateData = {};
+
+    if (coverPhotoUrl) {
+      if (playlist.coverPhotoUrl) {
+        await deleteStorageFile(playlist.coverPhotoUrl);
+      }
+      updateData.coverPhotoUrl = coverPhotoUrl;
+    }
+
+    if (title !== undefined && title !== null && title.trim() !== "") {
+      updateData.title = title.trim();
+    }
+
+    const updatedPlaylist = await Playlist.findOneAndUpdate(
+      { _id: id, userId: userId },
+      { $set: updateData },
+      { new: true, runValidators: true },
+    );
+
+    return res.status(200).json({
+      message: "Playlist updated successfully",
+      playlist: updatedPlaylist,
+    });
+  } catch (error) {
+    console.error("Failed to update playlist: ", error.message);
+    return next(
+      new AppError("Failed to update playlist. Try again later.", 500),
     );
   }
 }
@@ -206,9 +292,8 @@ async function deletePlaylist(req, res, next) {
       return next(new AppError("Playlist trying to delete not found", 404));
     }
 
-    // Delete cover photo from Supabase storage if it exists
     if (targetPlaylist.coverPhotoUrl) {
-      await deleteFileByUrl("playlist-cover-assets", targetPlaylist.coverPhotoUrl);
+      await deleteStorageFile(targetPlaylist.coverPhotoUrl);
     }
 
     await Playlist.deleteOne({ _id: id });
@@ -218,65 +303,11 @@ async function deletePlaylist(req, res, next) {
       message: "Playlist successfully deleted.",
     });
   } catch (error) {
-    console.error("Failed to delete playlist execution error:", error.message);
-    return next(new AppError(error.message, 500));
-  }
-}
-
-async function updatePlaylist(req, res, next) {
-  const { id } = req.params;
-  const userId = req.userId;
-  const { title } = req.body;
-
-  try {
-    // Find the playlist by id and userId
-    const playlist = await Playlist.findOne({
-      _id: id,
-      userId: userId,
-    });
-
-    if (!playlist) {
-      return next(new AppError("Playlist not found", 404));
-    }
-
-    // Prepare update data
-    const updateData = {};
-
-    // Handle cover photo upload if req.file exists
-    if (req.file) {
-      // If there's an existing cover photo, delete it
-      if (playlist.coverPhotoUrl) {
-        await deleteFileByUrl("playlist-cover-assets", playlist.coverPhotoUrl);
-      }
-
-      // Prepare the file name and upload
-      const fileName = `cover-${Date.now()}-${req.file.originalname}`;
-      const { data, publicUrl } = await uploadFile(
-        "playlist-cover-assets",
-        fileName,
-        req.file.buffer,
-        req.file.mimetype
-      );
-
-      updateData.coverPhotoUrl = publicUrl;
-    }
-
-    // Handle title update if provided
-    if (title !== undefined && title !== null && title.trim() !== "") {
-      updateData.title = title.trim();
-    }
-
-    // Update the playlist
-    const updatedPlaylist = await Playlist.findOneAndUpdate(
-      { _id: id, userId: userId },
-      { $set: updateData },
-      { new: true, runValidators: true }
+    console.error(
+      "Failed to delete playlist execution error:",
+      error.message,
     );
-
-    return res.status(200).json({ message: "Playlist updated successfully", playlist: updatedPlaylist });
-  } catch (error) {
-    console.error("Failed to update playlist: ", error.message);
-    return next(new AppError("Failed to update playlist. Try again later.", 500));
+    return next(new AppError(error.message, 500));
   }
 }
 
@@ -285,8 +316,9 @@ export {
   getAllPlaylists,
   getPlaylist,
   addTrackToPlaylist,
+  getCoverUploadUrl,
   updateCoverPhoto,
   removeTrackFromPlaylist,
   deletePlaylist,
-  updatePlaylist
+  updatePlaylist,
 };

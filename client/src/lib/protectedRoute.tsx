@@ -7,6 +7,7 @@ import { usePlaylistStore } from "@/states/PlaylistState";
 import { useTracksCountStore } from "@/states/TrackCountState";
 import ErrorMessage from "../components/ErrorMessage";
 import SuccessMessage from "../components/SuccessMessage";
+import UploadProgress from "../components/UploadProgress";
 
 export default function ProtectedRoute() {
   const { userData, isLoading } = useUser();
@@ -30,6 +31,7 @@ export default function ProtectedRoute() {
         <AudioPlayer />
         <ErrorMessage />
         <SuccessMessage />
+        <UploadProgress />
       </>
     ) : (
       <Navigate to={"/login"} />

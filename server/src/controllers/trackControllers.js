@@ -1,128 +1,117 @@
 import Track from "../models/track.js";
-import jsmediatags from "jsmediatags";
-import path from "path";
-import fs from "fs/promises";
-import * as mm from "music-metadata";
 import AppError from "../lib/appError.js";
-import { supabase, uploadFile, deleteFileByUrl } from "../config/supabase.js";
+import { supabase } from "../config/supabase.js";
+import { deleteStorageFile } from "../lib/storage.js";
 
-const getTrackMetadata = async (filePath) => {
-  return new Promise((resolve) => {
-    jsmediatags.read(filePath, {
-      onSuccess: (tag) => {
-        const { title, artist, picture } = tag.tags;
-        resolve({
-          title: title ?? null,
-          artist: artist ?? null,
-          pictureData: picture ?? null,
-        });
-      },
-      onError: (error) => {
-        console.warn(
-          "Warning: Could not read metadata for file:",
-          filePath,
-          error,
-        );
-        resolve({ title: null, artist: null, pictureData: null });
-      },
-    });
-  });
-};
+const BUCKET = "music-assets";
 
-async function addTracks(req, res, next) {
+async function getUploadUrls(req, res, next) {
   try {
-    // 1. Validate files exist in memory storage
-    if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
-      return res.status(400).json({ message: "No tracks uploaded" });
-    }
-
     const userId = req.userId;
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const trackPromises = req.files.map(async (file, index) => {
-      try {
-        // 🛡️ REPLACED: Check for file.buffer instead of file.path
-        if (!file.buffer) {
-          throw new Error(
-            `File binary buffer missing for file at index ${index}`,
-          );
-        }
+    const { audioFilename, imageFilename } = req.body;
 
-        let duration = 0;
-        let metadata = { title: null, artist: null, pictureData: null };
+    if (!audioFilename) {
+      return res
+        .status(400)
+        .json({ message: "Audio filename is required" });
+    }
 
-        try {
-          const parsedMeta = await mm.parseBuffer(file.buffer, file.mimetype);
-          duration = parsedMeta.format.duration || 0;
-          metadata.title = parsedMeta.common.title;
-          metadata.artist = parsedMeta.common.artist;
-          if (
-            parsedMeta.common.picture &&
-            parsedMeta.common.picture.length > 0
-          ) {
-            metadata.pictureData = {
-              data: parsedMeta.common.picture[0].data,
-              type: parsedMeta.common.picture[0].format,
-            };
-          }
-        } catch (parseError) {
-          console.warn(
-            `Warning: Could not parse audio buffer at index ${index}:`,
-            parseError,
-          );
-        }
-        let thumbnailUrl = null;
-        if (metadata.pictureData && metadata.pictureData.data) {
-          try {
-            const { data: thumbNailData, type } = metadata.pictureData;
-            const imageBuffer = Buffer.from(thumbNailData);
-            const extension = type.split("/")[1] || "jpg";
-            const thumbnailFilename = `thumb-${Date.now()}-${index}.${extension}`;
+    const audioPath = `user-${userId}/${Date.now()}-${audioFilename}`;
 
-            const { data, publicUrl } = await uploadFile("thumbnail-assets", thumbnailFilename, imageBuffer, type);
-            thumbnailUrl = publicUrl;
-          } catch (thumbnailError) {
-            console.warn(
-              `Warning: Failed to save thumbnail from buffer:`,
-              thumbnailError,
-            );
-          }
-        }
+    const { data: audioData, error: audioError } = await supabase.storage
+      .from(BUCKET)
+      .createSignedUploadUrl(audioPath, { upsert: true });
 
-        const audioFileName = `audio-${Date.now()}-${file.originalname}`;
-        const { data, publicUrl: audioFilePublicUrl } = await uploadFile("music-assets", audioFileName, file.buffer, file.mimetype);
+    if (audioError) {
+      console.error("Error creating audio signed URL:", audioError);
+      throw audioError;
+    }
 
-        const newTrack = new Track({
-          title:
-            metadata.title ??
-            file.originalname.replace(/\.[^/.]+$/, "") ??
-            "Unknown Title",
-          artist: metadata.artist ?? "Unknown Artist",
-          fileUrl: audioFilePublicUrl,
-          thumbnailUrl: thumbnailUrl,
-          userId: userId,
-          duration: duration,
-        });
+    const response = {
+      audio: {
+        uploadUrl: audioData.signedUrl,
+        storagePath: audioPath,
+      },
+      image: null,
+    };
 
-        return await newTrack.save();
-      } catch (fileError) {
-        console.error("Error processing file at index", index, ":", fileError);
-        throw fileError;
+    if (imageFilename) {
+      const imagePath = `user-${userId}/${Date.now()}-${imageFilename}`;
+
+      const { data: imageData, error: imageError } = await supabase.storage
+        .from("thumbnail-assets")
+        .createSignedUploadUrl(imagePath, { upsert: true });
+
+      if (imageError) {
+        console.error("Error creating image signed URL:", imageError);
+        throw imageError;
       }
-    });
-    const savedTracks = await Promise.all(trackPromises);
 
-    return res.status(201).json({
-      message: `${savedTracks.length} tracks uploaded successfully`,
-      tracks: savedTracks,
-    });
+      response.image = {
+        uploadUrl: imageData.signedUrl,
+        storagePath: imagePath,
+      };
+    }
+
+    return res.status(200).json(response);
   } catch (error) {
-    console.error("Error in addTracks:", error);
-    next(new AppError("Failed to upload tracks. Please try again.", 500));
+    console.error("Error generating upload URLs:", error);
+    next(
+      new AppError("Failed to generate upload URLs. Please try again.", 500),
+    );
   }
 }
+
+async function saveMetadata(req, res, next) {
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const { title, artist, audioStoragePath, imageStoragePath, duration } =
+      req.body;
+
+    if (!audioStoragePath) {
+      return res
+        .status(400)
+        .json({ message: "Audio storage path is required" });
+    }
+
+    const supabaseUrl = process.env.SUPABASE_URL?.replace(/\/+$/, "");
+    const fileUrl = `${supabaseUrl}/storage/v1/object/public/music-assets/${audioStoragePath}`;
+
+    let thumbnailUrl = null;
+    if (imageStoragePath) {
+      thumbnailUrl = `${supabaseUrl}/storage/v1/object/public/thumbnail-assets/${imageStoragePath}`;
+    }
+
+    const newTrack = new Track({
+      title: title || "Unknown Title",
+      artist: artist || "Unknown Artist",
+      fileUrl,
+      thumbnailUrl,
+      userId,
+      duration: duration || 0,
+    });
+
+    const savedTrack = await newTrack.save();
+    return res.status(201).json(savedTrack);
+  } catch (error) {
+    console.error("Error saving metadata:", error);
+    next(
+      new AppError(
+        "Failed to save track metadata. Please try again.",
+        500,
+      ),
+    );
+  }
+}
+
 async function getTracks(req, res, next) {
   try {
     const userId = req.userId;
@@ -150,29 +139,13 @@ async function deleteTrack(req, res, next) {
     }
 
     if (target.fileUrl) {
-      // Extract filename from public URL for Supabase storage deletion
-      try {
-        await deleteFileByUrl("music-assets", target.fileUrl);
-      } catch (err) {
-        console.warn(`Failed to delete audio from Supabase storage:`, err.message);
-      }
+      await deleteStorageFile(target.fileUrl);
     }
-    if (target.thumbnailUrl) {
-      // Extract filename from public URL for Supabase storage deletion
-      try {
-        const urlParts = target.thumbnailUrl.split('/');
-        let fileName = urlParts[urlParts.length - 1];
-        // Decode URL encoding (e.g., %20 -> space)
-        fileName = decodeURIComponent(fileName);
-        const { error: thumbError } = await supabase.storage
-          .from('thumbnail-assets')
-          .remove([fileName]);
 
-        if (thumbError) throw thumbError;
-      } catch (err) {
-        console.warn(`Failed to delete thumbnail from Supabase storage:`, err.message);
-      }
+    if (target.thumbnailUrl) {
+      await deleteStorageFile(target.thumbnailUrl);
     }
+
     await Track.deleteOne({ _id: id });
 
     return res.status(200).json({
@@ -196,4 +169,10 @@ async function getTracksCount(req, res, next) {
   }
 }
 
-export { addTracks, getTracks, deleteTrack, getTracksCount };
+export {
+  getUploadUrls,
+  saveMetadata,
+  getTracks,
+  deleteTrack,
+  getTracksCount,
+};

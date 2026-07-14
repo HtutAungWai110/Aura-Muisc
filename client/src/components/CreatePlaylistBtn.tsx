@@ -40,7 +40,7 @@ export default function CreatePlaylistBtn() {
 
   if (isCreating) {
     return (
-      <div className="max-w-[400px] w-full p-5 shadow-2xl border border-primary/50 rounded-2xl flex flex-col gap-5 mx-auto">
+      <div className="p-5 shadow-2xl border border-primary/50 rounded-2xl flex flex-col gap-5 mx-auto">
         <input
           type="text"
           value={playlistTitle}

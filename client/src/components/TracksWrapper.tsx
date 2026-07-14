@@ -33,8 +33,10 @@ export default function TracksWrapper({
     setMode(mode === Mode.shuffle ? Mode.all : Mode.shuffle);
   };
 
+  if(!tracks || tracks.length === 0) return null;
+
   return (
-    <div className="w-full mt-8">
+    <div className="w-full mt-8 mb-20">
       {tracks && tracks.length > 0 && (
         <div className="flex gap-2 my-8">
           <Button
@@ -58,13 +60,11 @@ export default function TracksWrapper({
       )}
 
       {/* Header */}
-      <div className="grid grid-cols-[48px_1fr_1fr_100px_48px] gap-4 px-4 py-2 text-on-surface-variant font-label-caps text-label-caps border-b border-white/5">
+      <div className="hidden sm:grid grid-cols-5 gap-2 px-4 py-2 text-on-surface-variant font-label-caps text-[1em] border-b border-white/5">
         <div className="flex justify-center">#</div>
         <div>Title</div>
-        <div className="hidden md:block">Date Added</div>
-        <div className="flex justify-end">
-          <Clock className="size-4" />
-        </div>
+        <div>Date Added</div>
+        <div className="flex justify-end"><Clock className="size-4" /></div>
         <div></div>
       </div>
 

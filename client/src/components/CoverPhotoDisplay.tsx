@@ -1,35 +1,35 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import type { Area } from "react-easy-crop";
 import { getCroppedImg } from "@/lib/cropImage";
 import { base64ToFile } from "@/lib/convertImage";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import apiClient from "@/lib/apiClient";
 import { usePlaylistStore } from "@/states/PlaylistState";
 import { Button } from "./ui/button";
 import { Check, X } from "lucide-react";
 import { Spinner } from "./ui/spinner";
 import PhotoCropper from "./PhotoCropper";
-import { useRef } from "react";
 import { Music, Camera } from "lucide-react";
 import { useErrorStore } from "@/states/ErrorState";
 import { useSuccessStore } from "@/states/SuccessState";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface CoverPhotoDisplayProps {
   coverPhotoUrl: string | null;
   playlistId: string;
   isOnEditMode: boolean;
-  appendFile: (payload: File) => void | null;
+  onCoverUploaded?: (coverUrl: string) => void | null;
 }
 
 export default function CoverPhotoDisplay({
   coverPhotoUrl,
   playlistId,
   isOnEditMode,
-  appendFile,
+  onCoverUploaded,
 }: CoverPhotoDisplayProps) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const [croppedImage, setCroppedImage] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const { updatePlaylist } = usePlaylistStore();
 
   const queryClient = useQueryClient();
@@ -38,44 +38,51 @@ export default function CoverPhotoDisplay({
   const { setSuccessMessage } = useSuccessStore();
   const { setError } = useErrorStore();
 
-  const uploadCoverMutation = useMutation({
-    mutationFn: async (formData: FormData) => {
-      const res = await apiClient.post(
-        `/api/playlist/${playlistId}/cover`,
-        formData,
-      );
-      return res.data;
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: [`Playlist ${playlistId}`] });
-      const { updatedPlaylist } = data;
-      updatePlaylist(playlistId, updatedPlaylist);
-      setSuccessMessage(data.message)
-      setSelectedImage(null);
-    },
-    onError: (error) => {
-      setError(error.message);
-    },
-  });
-
   const handleSaveCrop = async () => {
-    if (selectedImage && croppedAreaPixels) {
-      try {
-        const base64 = await getCroppedImg(selectedImage, croppedAreaPixels);
-        const croppedFile = base64ToFile(base64, "playlist-cover.jpg");
-        if (isOnEditMode) {
-          const imageUrl = URL.createObjectURL(croppedFile);
-          setCroppedImage(imageUrl);
-          appendFile(croppedFile)
-          setSelectedImage(null);
-        } else {
-          const form = new FormData();
-          form.append("cover", croppedFile);
-          uploadCoverMutation.mutate(form);
-        }
-      } catch (error) {
-        console.error("Failed to crop image", error);
+    if (!selectedImage || !croppedAreaPixels) return;
+
+    try {
+      setIsUploading(true);
+      const base64 = await getCroppedImg(selectedImage, croppedAreaPixels);
+      const croppedFile = base64ToFile(base64, selectedImage.split("/").pop());
+
+      const { data: urlData } = await apiClient.post(
+        "/api/playlist/cover-upload-url",
+        { filename: croppedFile.name, fileType: croppedFile.type },
+      );
+
+      const imgRes = await fetch(urlData.uploadUrl, {
+        method: "PUT",
+        headers: { "Content-Type": croppedFile.type || "image/jpeg" },
+        body: croppedFile,
+      });
+      if (!imgRes.ok) {
+        const err = await imgRes.text();
+        throw new Error(`Image upload failed (${imgRes.status}): ${err}`);
       }
+
+      if (isOnEditMode) {
+        const imageUrl = URL.createObjectURL(croppedFile);
+        setCroppedImage(imageUrl);
+        onCoverUploaded?.(urlData.publicUrl);
+        setSelectedImage(null);
+      } else {
+        const { data } = await apiClient.post(
+          `/api/playlist/${playlistId}/cover`,
+          { coverPhotoUrl: urlData.publicUrl },
+        );
+        queryClient.invalidateQueries({
+          queryKey: [`Playlist ${playlistId}`],
+        });
+        updatePlaylist(playlistId, data.updatedPlaylist);
+        setSuccessMessage(data.message);
+        setSelectedImage(null);
+      }
+    } catch (error) {
+      console.error("Failed to crop image", error);
+      setError("Failed to upload cover photo");
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -106,9 +113,9 @@ export default function CoverPhotoDisplay({
             <Button
               className="rounded-full px-6 gap-2 bg-primary text-on-primary-container font-bold"
               onClick={handleSaveCrop}
-              disabled={uploadCoverMutation.isPending}
+              disabled={isUploading}
             >
-              {uploadCoverMutation.isPending ? (
+              {isUploading ? (
                 <Spinner />
               ) : (
                 <>
@@ -127,10 +134,10 @@ export default function CoverPhotoDisplay({
         </div>
       )}
 
-      <div className="size-56 md:size-64 rounded-xl shadow-2xl overflow-hidden flex-shrink-0 relative group">
+      <div className="size-40 md:size-64 rounded-xl shadow-2xl overflow-hidden flex-shrink-0 relative group">
         {coverPhotoUrl || croppedImage ? (
           <img
-            src={`${croppedImage ? croppedImage : coverPhotoUrl}`}
+            src={croppedImage ? croppedImage : coverPhotoUrl}
             alt={"Cover Photo"}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />

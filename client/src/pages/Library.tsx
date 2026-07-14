@@ -1,18 +1,19 @@
 import ImportTrackBtn from "@/components/ImportTrackBtn";
 import apiClient from "@/lib/apiClient";
-import ErrorMessage from "@/components/ErrorMessage";
-import SuccessMessage from "@/components/SuccessMessage";
 import TrackPreviewWrapper from "@/components/TrackPreviewsWrapper";
 import TracksWrapper from "@/components/TracksWrapper";
 import { useTrackImportsState } from "@/states/TrackImportsState";
 import { useQuery } from "@tanstack/react-query";
 import PlaylistsWrapper from "@/components/PlaylistsWrappers";
 import { usePlaybackState } from "@/states/PlaybackState";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 export default function Library() {
   const { previewTracks } = useTrackImportsState();
-  const { setCurrentTrack, setTracks, mode } = usePlaybackState();
+  const { mode } = usePlaybackState();
+  const [airplaneMode, setAirplaneMode] = useState(false)
   const { data: tracks, isLoading } = useQuery({
     queryKey: ["Tracks"],
     queryFn: async () => {
@@ -34,7 +35,8 @@ export default function Library() {
         <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-secondary-container/20 rounded-full blur-[100px]"></div>
       </div>
 
-      <section className="max-w-4xl w-full">
+
+      <section className="w-full">
         <div className="mb-5">
           <h1 className="font-headline-xl text-headline-xl text-on-surface mb-2">
             Sonic Immersion
@@ -44,7 +46,7 @@ export default function Library() {
           </p>
         </div>
 
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-center md:justify-start">
           <ImportTrackBtn />
         </div>
 
@@ -64,6 +66,15 @@ export default function Library() {
           )
         )}
       </section>
+      <div className="flex items-center space-x-2 p-4">
+            <Switch
+              id="airplane-mode"
+              checked={airplaneMode}
+              onCheckedChange={() => setAirplaneMode(!airplaneMode)}
+              className="bg-white"
+            />
+            <Label htmlFor="airplane-mode">Airplane Mode</Label>
+        </div>
     </main>
   );
 }

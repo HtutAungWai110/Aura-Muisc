@@ -1,7 +1,7 @@
 import { formatDuration, formatRelativeDate } from "@/lib/utils";
 import { Play } from "lucide-react";
 import { usePlaybackState } from "@/states/PlaybackState";
-import TrackOptionsMenu from "./PlaylistMenu";
+import TrackOptionsMenu from "./TrackOptionsMenu";
 import { memo } from "react";
 
 import type { Track } from "@/types/TrackType";
@@ -41,7 +41,7 @@ const TrackTemplate = ({
 
   return (
     <div
-      className={`grid grid-cols-[48px_1fr_1fr_100px_48px] gap-4 px-4 py-3 rounded-md hover:bg-white/5 group transition-colors cursor-pointer ${isCurrent ? "bg-primary/10" : ""}`}
+      className={`grid grid-cols-[auto_1fr_auto] sm:grid-cols-5 gap-2 sm:gap-4 px-2 sm:px-4 py-3 rounded-md hover:bg-white/5 group transition-colors cursor-pointer ${isCurrent ? "bg-primary/10" : ""}`}
       onClick={handlePlay}
     >
       <div className="flex items-center justify-center text-on-surface-variant group-hover:text-on-surface">
@@ -82,21 +82,21 @@ const TrackTemplate = ({
         )}
         <div className="flex flex-col min-w-0">
           <span
-            className={`font-bold truncate ${isCurrent ? "text-primary" : "text-on-surface"}`}
+            className={`font-bold truncate text-xs sm:text-sm md:text-base ${isCurrent ? "text-primary" : "text-on-surface"}`}
           >
             {track.title}
           </span>
-          <span className="text-on-surface-variant text-sm truncate">
+          <span className="text-on-surface-variant text-[10px] sm:text-sm truncate">
             {track.artist}
           </span>
         </div>
       </div>
 
-      <div className="hidden md:flex items-center text-on-surface-variant text-sm">
+      <div className="hidden sm:flex items-center text-on-surface-variant text-sm">
         {formatRelativeDate(track.addedAt)}
       </div>
 
-      <div className="flex items-center justify-end text-on-surface-variant text-sm">
+      <div className="hidden sm:flex items-center justify-end text-on-surface-variant text-sm">
         {formatDuration(track.duration)}
       </div>
 

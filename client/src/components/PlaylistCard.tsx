@@ -10,7 +10,7 @@ export default function PlaylistCard({ playlist }: PlaylistCardProps) {
   const trackCount = playlist.tracks.length;
 
   return (
-    <Link to={`/playlist/${playlist._id}`}>
+    <Link to={`/playlist/${playlist._id}`} className="sm:w-50 w-40">
       <div className="group relative flex flex-col gap-3 p-4 rounded-xl bg-white/5 hover:bg-white/10 transition-all duration-300 cursor-pointer">
         <div className="relative aspect-square overflow-hidden rounded-lg shadow-lg">
           {playlist.coverPhotoUrl ? (

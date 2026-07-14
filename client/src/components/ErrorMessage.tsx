@@ -15,7 +15,7 @@ export default function ErrorMessage() {
           animate={{ x: 0, opacity: 1 }}
           exit={{ x: "100%", opacity: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
-          className="fixed top-10 right-10 z-50 min-w-100 max-w-80 bg-surface-container-highest text-white border border-white/10 shadow-2xl rounded-lg"
+          className="fixed top-10 right-10 z-900 min-w-100 max-w-80 bg-surface-container-highest text-white border border-white/10 shadow-2xl rounded-lg"
         >
           <Alert className="border-none bg-transparent">
             <InfoIcon className="text-error" />
