@@ -17,14 +17,9 @@ export default function QueuePanel({ onClose }: QueuePanelProps) {
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      // Check if the click target is outside the panel
-      // Also ensure we don't close it if clicking the queue button itself,
-      // but since the queue button handles toggle itself, stopping event propagation
-      // or letting it check if the click hits the panel is standard.
+
       if (panelRef.current && !panelRef.current.contains(event.target as Node)) {
-        // To prevent immediate closing if the click was on the toggle button itself (which triggers AudioPlayer state),
-        // we can check if the click was on a button that toggles queue, or just let it close.
-        // Let's add a small check to see if the element or its parent has a specific attribute or if we can ignore clicks that happen right as it opens.
+
         onClose();
       }
     }
@@ -38,7 +33,7 @@ export default function QueuePanel({ onClose }: QueuePanelProps) {
   return (
     <div
       ref={panelRef}
-      className="fixed right-8 bottom-[160px] md:bottom-28 md:right-8 w-80 max-h-[70vh] bg-surface-container/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl flex flex-col z-[110] overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300 max-md:left-4 max-md:right-4 max-md:bottom-[120px] max-md:w-auto"
+      className="fixed right-8 z-[400] bottom-[160px] md:bottom-28 md:right-8 w-80 max-h-[70vh] bg-surface-container/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300 max-md:left-4 max-md:right-4 max-md:bottom-[120px] max-md:w-auto"
     >
       <div className="p-4 border-b border-white/5 flex items-center justify-between">
         <div className="flex items-center gap-2">

@@ -2,30 +2,9 @@ import Playlist from "../models/playlist.js";
 import AppError from "../lib/appError.js";
 import Track from "../models/track.js";
 import { supabase } from "../config/supabase.js";
+import { deleteStorageFile } from "../lib/storage.js";
 
 const BUCKET = "music-assets";
-
-function extractStorageFromUrl(publicUrl) {
-  const marker = "/object/public/";
-  const idx = publicUrl.indexOf(marker);
-  if (idx === -1) return null;
-  const rest = publicUrl.slice(idx + marker.length);
-  const slashIdx = rest.indexOf("/");
-  if (slashIdx === -1) return null;
-  const bucket = rest.slice(0, slashIdx);
-  const path = decodeURIComponent(rest.slice(slashIdx + 1));
-  return { bucket, path };
-}
-
-async function deleteStorageFile(publicUrl) {
-  const storage = extractStorageFromUrl(publicUrl);
-  if (!storage) return;
-  try {
-    await supabase.storage.from(storage.bucket).remove([storage.path]);
-  } catch (err) {
-    console.warn("Failed to delete file from storage:", err.message);
-  }
-}
 
 async function createPlaylist(req, res, next) {
   try {
@@ -158,7 +137,7 @@ async function getCoverUploadUrl(req, res, next) {
         .json({ message: "File information is required" });
     }
 
-    const storagePath = `user-${userId}/${filename}`;
+    const storagePath = `user-${userId}/${Date.now()}-${filename}`;
 
     const { data, error } = await supabase.storage
       .from("playlist-cover-assets")

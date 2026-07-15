@@ -44,7 +44,7 @@ export default function CoverPhotoDisplay({
     try {
       setIsUploading(true);
       const base64 = await getCroppedImg(selectedImage, croppedAreaPixels);
-      const croppedFile = base64ToFile(base64, "playlist-cover.jpg");
+      const croppedFile = base64ToFile(base64, selectedImage.split("/").pop());
 
       const { data: urlData } = await apiClient.post(
         "/api/playlist/cover-upload-url",

@@ -1,20 +1,9 @@
 import Track from "../models/track.js";
 import AppError from "../lib/appError.js";
 import { supabase } from "../config/supabase.js";
+import { deleteStorageFile } from "../lib/storage.js";
 
 const BUCKET = "music-assets";
-
-function extractStorageFromUrl(publicUrl) {
-  const marker = "/object/public/";
-  const idx = publicUrl.indexOf(marker);
-  if (idx === -1) return null;
-  const rest = publicUrl.slice(idx + marker.length);
-  const slashIdx = rest.indexOf("/");
-  if (slashIdx === -1) return null;
-  const bucket = rest.slice(0, slashIdx);
-  const path = decodeURIComponent(rest.slice(slashIdx + 1));
-  return { bucket, path };
-}
 
 async function getUploadUrls(req, res, next) {
   try {
@@ -150,25 +139,11 @@ async function deleteTrack(req, res, next) {
     }
 
     if (target.fileUrl) {
-      try {
-        const storage = extractStorageFromUrl(target.fileUrl);
-        if (storage) {
-          await supabase.storage.from(storage.bucket).remove([storage.path]);
-        }
-      } catch (err) {
-        console.warn("Failed to delete audio from storage:", err.message);
-      }
+      await deleteStorageFile(target.fileUrl);
     }
 
     if (target.thumbnailUrl) {
-      try {
-        const storage = extractStorageFromUrl(target.thumbnailUrl);
-        if (storage) {
-          await supabase.storage.from(storage.bucket).remove([storage.path]);
-        }
-      } catch (err) {
-        console.warn("Failed to delete thumbnail from storage:", err.message);
-      }
+      await deleteStorageFile(target.thumbnailUrl);
     }
 
     await Track.deleteOne({ _id: id });

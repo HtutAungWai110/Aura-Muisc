@@ -161,7 +161,7 @@ const Sidebar = () => {
         className="md:hidden absolute top-4 right-4 z-[110]"
       >
         <div className="relative group">
-          <div className="absolute -inset-1 from-primary to-secondary rounded-full blur opacity-40 group-hover:opacity-70 transition duration-300"></div>
+          <div className="absolute -z-10 -inset-1 from-primary to-secondary rounded-full blur opacity-40 group-hover:opacity-70 transition duration-300"></div>
           <img
             src={avatar}
             alt={displayName}

@@ -42,7 +42,7 @@ export default function Library() {
           </p>
         </div>
 
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-center md:justify-start">
           <ImportTrackBtn />
         </div>
 

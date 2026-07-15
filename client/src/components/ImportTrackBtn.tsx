@@ -12,7 +12,7 @@ export default function ImportTrackBtn() {
     }
   }, [previewTracks]);
   return (
-    <div className="relative w-50 h-10 flex justify-center items-center gap-2 rounded-2xl border border-primary bg-primary/10 hover:scale-105 duration-300">
+    <div className="relative md:w-80 w-100 md:h-10 h-15 flex justify-center items-center gap-2 rounded-2xl border border-primary bg-primary/10 hover:scale-105 duration-300">
       <Input
         className="absolute w-full h-full opacity-0 cursor-pointer"
         type="file"
