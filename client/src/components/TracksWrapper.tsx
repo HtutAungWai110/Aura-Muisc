@@ -33,6 +33,8 @@ export default function TracksWrapper({
     setMode(mode === Mode.shuffle ? Mode.all : Mode.shuffle);
   };
 
+  if(!tracks || tracks.length === 0) return null;
+
   return (
     <div className="w-full mt-8 mb-20">
       {tracks && tracks.length > 0 && (

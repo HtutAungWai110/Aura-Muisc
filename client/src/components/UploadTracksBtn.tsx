@@ -1,40 +1,51 @@
-import { useState } from "react";
 import { Button } from "./ui/button";
 import { useTrackImportsState } from "@/states/TrackImportsState";
 import { useMutation } from "@tanstack/react-query";
 import { Spinner } from "./ui/spinner";
-import { useSuccessStore } from "@/states/SuccessState";
-import { useQueryClient } from "@tanstack/react-query";
 import { useErrorStore } from "@/states/ErrorState";
 import { uploadSingleTrack } from "@/lib/uploadHelpers";
+import { useUploadStore } from "@/states/UploadState"
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function UploadTracksBtn() {
   const { previewTracks, clearAudioTracks } = useTrackImportsState();
   const { setError } = useErrorStore();
-  const { setSuccessMessage } = useSuccessStore();
+  const { addNewUpload, isKeyExist, removeUpload, setFileProgress } =
+    useUploadStore()
   const queryClient = useQueryClient();
-  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>(
-    {},
-  );
 
   const uploadMutation = useMutation({
     mutationFn: async () => {
-      if (!previewTracks || previewTracks.length === 0) return [];
+      if (!previewTracks || previewTracks.length === 0) return null;
 
-      const results = [];
-      for (const track of previewTracks) {
-        const saved = await uploadSingleTrack(track, (trackId, pct) => {
-          setUploadProgress((prev) => ({ ...prev, [trackId]: pct }));
-        });
-        results.push(saved);
+      let newKey = Date.now().toString();
+      while (isKeyExist(newKey)) {
+        newKey = Date.now().toString();
       }
-      return results;
-    },
-    onSuccess: (data) => {
-      setSuccessMessage(`${data?.length ?? 0} tracks uploaded successfully`);
+
+      const tracks = [...previewTracks];
+      addNewUpload(newKey, tracks);
       clearAudioTracks();
-      setUploadProgress({});
-      queryClient.invalidateQueries({ queryKey: ["Tracks"] });
+
+      (async () => {
+        try {
+          for (const track of tracks) {
+            await uploadSingleTrack(track, (trackId, pct) => {
+              setFileProgress(newKey, trackId, pct);
+            });
+          }
+          queryClient.invalidateQueries({ queryKey: ["Tracks"] });
+        } catch (err) {
+          const msg =
+            err instanceof Error ? err.message : "Upload failed";
+          console.error(msg);
+          setError(msg);
+        } finally {
+          removeUpload(newKey);
+        }
+      })();
+
+      return newKey;
     },
     onError: (error: Error & { response?: { data?: { message?: string } } }) => {
       const msg =
@@ -43,11 +54,6 @@ export default function UploadTracksBtn() {
       setError(msg);
     },
   });
-
-  const activeTrackId = previewTracks?.find(
-    (t) => uploadProgress[t.id] !== undefined && uploadProgress[t.id] < 100,
-  )?.id;
-  const activePct = activeTrackId ? uploadProgress[activeTrackId] ?? 0 : 0;
 
   return (
     <div className="flex justify-end gap-2 mb-5">
@@ -58,9 +64,7 @@ export default function UploadTracksBtn() {
         onClick={() => uploadMutation.mutate()}
       >
         {uploadMutation.isPending && <Spinner />}
-        {uploadMutation.isPending && activeTrackId
-          ? `Uploading ${activePct}%`
-          : "Upload"}
+        Upload
       </Button>
     </div>
   );
