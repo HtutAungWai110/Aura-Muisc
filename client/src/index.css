@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @custom-variant dark (&:is(.dark *));
-/*
+
 :root {
     --color-surface: #faf8fc;
     --color-background: #faf8fc;
@@ -49,7 +49,7 @@
     --color-tertiary-fixed: #ffd8e4;
     --color-tertiary-fixed-dim: #efb8c8;
     --color-surface-tint: #6750a4;
-}*/
+}
 
 .dark {
     --color-surface: #131313;

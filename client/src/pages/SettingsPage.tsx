@@ -106,7 +106,7 @@ export default function SettingsPage() {
               </div>
             </div>
             <Switch
-              className="in-dark:border-white border-black"
+              className="in-dark:bg-primary/10"
               onClick={toggleTheme}
             />
           </div>
