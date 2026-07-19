@@ -1,6 +1,7 @@
 import Library from "./pages/Library";
 import Login from "./pages/Login";
 import PlaylistPage from "./pages/PlaylistPage";
+import SettingsPage from "./pages/SettingsPage";
 import ProtectedRoute from "./lib/protectedRoute";
 import { Routes, Route, BrowserRouter } from "react-router-dom";
 import PublicRoute from "./lib/publicRoute";
@@ -32,7 +33,7 @@ function App() {
           <Route path="/" element={<Library />} />
           <Route path="/library" element={<Library />} />
           <Route path="/playlists" element={<PlaylistsPage />} />
-          <Route path="/settings" element={<div>Settings Page</div>} />
+          <Route path="/settings" element={<SettingsPage />} />
           <Route path="/playlist/:id" element={<PlaylistPage />} />
         </Route>
       </Routes>

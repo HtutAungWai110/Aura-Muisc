@@ -15,12 +15,12 @@ const DesktopNavItem = ({ icon, label, isActive, path }: NavItemProps) => (
     to={path}
     className={`group flex items-center gap-4 mx-2 px-4 py-3 rounded-full transition-all duration-200 transform active:scale-95 ${
       isActive
-        ? "bg-primary-container text-on-primary-container font-bold translate-x-1 active-glow"
+        ? "bg-primary text-on-primary font-bold translate-x-1 active-glow"
         : "text-on-surface-variant hover:bg-surface-variant/50"
     }`}
   >
     <span
-      className="material-symbols-outlined transition-colors group-hover:text-primary"
+      className="material-symbols-outlined transition-colors"
       style={{ fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0" }}
     >
       {icon}

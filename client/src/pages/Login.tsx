@@ -21,7 +21,7 @@ const Login = () => {
   }, []);
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-mesh selection:bg-primary selection:text-on-primary text-on-surface font-body-lg">
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden selection:bg-primary selection:text-on-primary text-on-surface font-body-lg">
       {/* Atmospheric Background Elements */}
       <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/20 blur-[120px] rounded-full animate-pulse-slow"></div>
       <div
@@ -34,7 +34,7 @@ const Login = () => {
         {/* Branding Header */}
         <div className="text-center mb-12 animate-in fade-in duration-700">
           <div
-            className="inline-flex items-center justify-center w-32 h-32 mb-6 glass-panel rounded-3xl neon-glow transition-transform"
+            className="inline-flex items-center justify-center w-32 h-32 mb-6 in-dark:bg-primary/10 bg-black/10 rounded-3xl neon-glow transition-transform"
             style={{ transform: `translateY(${floatY}px)` }}
           >
             <span
@@ -53,7 +53,7 @@ const Login = () => {
         </div>
 
         {/* Login Card */}
-        <div className="glass-panel p-8 rounded-lg shadow-2xl animate-in slide-in-from-bottom-8 duration-700">
+        <div className="in-dark:bg-primary/10 bg-black/10  p-8 rounded-lg shadow-2xl animate-in slide-in-from-bottom-8 duration-700">
           <div className="mb-10 text-center">
             <h2 className="font-headline-lg text-headline-lg text-on-surface mb-2">
               Welcome back to Aura
@@ -68,7 +68,7 @@ const Login = () => {
             <Button
               onClick={onClick}
               variant="outline"
-              className="w-full h-14 flex items-center justify-center gap-4 bg-white text-surface font-bold rounded-full hover:bg-white/90 transition-all duration-300 active:scale-95 shadow-lg group border-none"
+              className="w-full h-14 flex items-center justify-center gap-4 text-surface font-bold rounded-full transition-all duration-300 active:scale-95 shadow-lg group border-none"
             >
               <svg className="w-6 h-6" viewBox="0 0 24 24">
                 <path
@@ -88,7 +88,7 @@ const Login = () => {
                   fill="#EA4335"
                 ></path>
               </svg>
-              <span className="font-title-md">Sign in with Google</span>
+              <span className="font-title-md text-black in-dark:text-white">Sign in with Google</span>
             </Button>
           </div>
         </div>

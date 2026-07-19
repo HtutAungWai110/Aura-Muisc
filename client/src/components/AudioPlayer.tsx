@@ -254,7 +254,7 @@ export default function AudioPlayer() {
             <Button
               variant="ghost"
               size="icon"
-              className="size-7 md:size-10 rounded-full bg-white hover:scale-105 transition-transform"
+              className="rounded-full bg-primary w-12 h-12 hover:bg-primary/90 text-on-primary-container font-bold text-lg shadow-lg hover:shadow-primary/20 transition-all"
               onClick={(e) => { e.stopPropagation(); togglePlay(); }}
             >
               {isPlaying ? (
@@ -411,7 +411,7 @@ export default function AudioPlayer() {
                 max={duration || 100}
                 step={1}
                 onValueChange={handleProgressChange}
-                className="flex-1"
+                className="flex-1 "
               />
               <span className="text-[10px] text-on-surface-variant w-10 font-mono">
                 {formatDuration(duration)}
@@ -502,7 +502,7 @@ export default function AudioPlayer() {
               max={1}
               step={0.01}
               onValueChange={handleVolumeChange}
-              className="w-40"
+              className="w-20"
             />
           </div>
           </motion.div>

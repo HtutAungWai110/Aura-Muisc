@@ -6,14 +6,10 @@ import { useTrackImportsState } from "@/states/TrackImportsState";
 import { useQuery } from "@tanstack/react-query";
 import PlaylistsWrapper from "@/components/PlaylistsWrappers";
 import { usePlaybackState } from "@/states/PlaybackState";
-import { useEffect, useState } from "react";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-
+import { useEffect } from "react";
 export default function Library() {
   const { previewTracks } = useTrackImportsState();
   const { mode } = usePlaybackState();
-  const [airplaneMode, setAirplaneMode] = useState(false)
   const { data: tracks, isLoading } = useQuery({
     queryKey: ["Tracks"],
     queryFn: async () => {
@@ -66,15 +62,7 @@ export default function Library() {
           )
         )}
       </section>
-      <div className="flex items-center space-x-2 p-4">
-            <Switch
-              id="airplane-mode"
-              checked={airplaneMode}
-              onCheckedChange={() => setAirplaneMode(!airplaneMode)}
-              className="bg-white"
-            />
-            <Label htmlFor="airplane-mode">Airplane Mode</Label>
-        </div>
+
     </main>
   );
 }
