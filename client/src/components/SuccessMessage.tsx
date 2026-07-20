@@ -15,18 +15,18 @@ export default function SuccessMessage() {
           animate={{ x: 0, opacity: 1 }}
           exit={{ x: "100%", opacity: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
-          className="fixed top-10 right-10 z-900 max-w-80 sm:text-sm text-xs bg-surface-container-highest text-white border border-white/10 shadow-2xl rounded-lg"
+          className="fixed top-10 right-10 z-900 max-w-80 sm:text-sm text-xs bg-surface-container-highest text-on-surface border border-white/10 shadow-2xl rounded-lg"
         >
           <Alert className="border-none bg-transparent">
-            <CheckCircle className="text-primary" />
-            <AlertTitle className="text-white font-bold">Successful</AlertTitle>
-            <AlertDescription className="text-white/70">
+            <CheckCircle className="text-on-surface" />
+            <AlertTitle className="text-on-surface font-bold">Successful</AlertTitle>
+            <AlertDescription className="text-on-surface-variant">
               {successMessage}
             </AlertDescription>
             <AlertAction>
               <Button
                 variant="ghost"
-                className="hover:bg-white/10 text-white border border-white/20"
+                className="hover:bg-white/10 text-on-surface border border-white/20"
                 onClick={() => setSuccessMessageNull()}
               >
                 Close

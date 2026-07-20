@@ -18,7 +18,7 @@ export default function UploadProgress() {
         className="fixed bottom-6 right-6 z-900 w-80 bg-surface-container-highest border border-white/10 shadow-2xl rounded-lg overflow-hidden"
       >
         <div className="px-4 py-3 border-b border-white/10 flex items-center gap-2">
-          <Spinner className="size-4 text-primary" />
+          <Spinner className="size-4 text-on-surface" />
           <span className="text-sm font-medium text-on-surface">
             Uploading {entries.length} {entries.length === 1 ? "batch" : "batches"}
           </span>
@@ -47,7 +47,7 @@ export default function UploadProgress() {
                         </div>
                         <div className="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
                           <motion.div
-                            className="h-full bg-primary rounded-full"
+                            className="h-full bg-on-surface rounded-full"
                             initial={{ width: 0 }}
                             animate={{ width: `${pct}%` }}
                             transition={{ duration: 0.3 }}

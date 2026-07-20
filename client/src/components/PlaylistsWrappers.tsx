@@ -1,14 +1,16 @@
 import { usePlaylistStore } from "@/states/PlaylistState";
 import PlaylistCard from "./PlaylistCard";
 import { Spinner } from "./ui/spinner";
+import { Link } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 export default function PlaylistsWrapper() {
   const { playlists, isPending, error } = usePlaylistStore();
-
+  const location = useLocation();
   if (isPending) {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-4">
-        <Spinner className="size-8 text-primary" />
+        <Spinner className="size-8 text-on-surface" />
         <p className="text-on-surface-variant font-label-caps animate-pulse">
           Loading Playlists...
         </p>
@@ -48,10 +50,16 @@ export default function PlaylistsWrapper() {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-        {playlists.map((playlist) => (
-          <PlaylistCard key={playlist._id} playlist={playlist} />
-        ))}
+        {playlists.map((playlist, index) => {
+          if (index + 1 > 5 && location.pathname !== "/playlists") return null;
+          return <PlaylistCard key={playlist._id} playlist={playlist} />;
+        })}
       </div>
+      {playlists.length > 5 && location.pathname !== "/playlists" &&
+        <div className="flex justify-end items-center mt-5">
+          <Link to="/playlists" className="text-on-surface-variant text-sm">View all playlists</Link>
+        </div>
+      }
     </div>
   );
 }

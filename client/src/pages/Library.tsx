@@ -27,8 +27,8 @@ export default function Library() {
   return (
     <main className="md:ml-80 min-h-screen p-container-padding-mobile md:p-container-padding-desktop flex flex-col items-center justify-start relative overflow-hidden pb-32">
       <div className="absolute top-0 left-0 w-full h-full -z-10 bg-surface">
-        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px]"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-secondary-container/20 rounded-full blur-[100px]"></div>
+        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-on-surface/3 rounded-full blur-[120px]"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-outline/3 rounded-full blur-[100px]"></div>
       </div>
 
 

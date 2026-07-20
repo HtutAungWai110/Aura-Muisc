@@ -12,7 +12,6 @@ export default function QueuePanel({ onClose }: QueuePanelProps) {
   const { queue, queueIndex, currentTrack, setCurrentTrack } = usePlaybackState();
   const panelRef = useRef<HTMLDivElement>(null);
 
-  // Upcoming tracks are those after the current index in the queue
   const upcomingTracks = queue.slice(queueIndex + 1);
 
   useEffect(() => {
@@ -37,7 +36,7 @@ export default function QueuePanel({ onClose }: QueuePanelProps) {
     >
       <div className="p-4 border-b border-white/5 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <ListMusic className="size-5 text-primary" />
+          <ListMusic className="size-5 text-on-surface" />
           <h3 className="font-bold text-on-surface">Queue</h3>
         </div>
         <Button variant="ghost" size="icon" onClick={onClose} className="hover:bg-white/10 size-8">
@@ -50,14 +49,14 @@ export default function QueuePanel({ onClose }: QueuePanelProps) {
         <section>
           <p className="text-[10px] font-label-caps text-on-surface-variant px-2 mb-2 uppercase tracking-wider opacity-70">Now Playing</p>
           {currentTrack ? (
-            <div className="flex items-center gap-3 p-2 rounded-lg bg-primary/10 border border-primary/20">
+            <div className="flex items-center gap-3 p-2 rounded-lg bg-on-surface/5 border border-on-surface/10">
               {currentTrack.thumbnailUrl ? (
                 <img src={currentTrack.thumbnailUrl} className="size-10 rounded object-cover shadow-sm" alt="" />
               ) : (
                 <div className="size-10 rounded bg-surface-variant flex items-center justify-center text-lg">🎵</div>
               )}
               <div className="flex flex-col min-w-0 flex-1">
-                <span className="text-sm font-bold text-primary truncate">{currentTrack.title}</span>
+                <span className="text-sm font-bold text-on-surface truncate">{currentTrack.title}</span>
                 <span className="text-xs text-on-surface-variant truncate">{currentTrack.artist}</span>
               </div>
               <span className="text-[10px] text-on-surface-variant font-mono">
@@ -86,7 +85,7 @@ export default function QueuePanel({ onClose }: QueuePanelProps) {
                     <div className="size-10 rounded bg-surface-variant flex items-center justify-center">🎵</div>
                   )}
                   <div className="flex flex-col min-w-0 flex-1">
-                    <span className="text-sm font-bold text-on-surface truncate group-hover:text-primary transition-colors">
+                    <span className="text-sm font-bold text-on-surface truncate group-hover:text-on-surface transition-colors">
                       {track.title}
                     </span>
                     <span className="text-xs text-on-surface-variant truncate">{track.artist}</span>

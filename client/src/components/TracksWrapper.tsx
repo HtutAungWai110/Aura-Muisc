@@ -36,11 +36,11 @@ export default function TracksWrapper({
   if(!tracks || tracks.length === 0) return null;
 
   return (
-    <div className="w-full mt-8 mb-20">
+    <div className="w-full mt-8 mb-10 md:mb-20">
       {tracks && tracks.length > 0 && (
         <div className="flex gap-2 my-8">
           <Button
-            className="rounded-full bg-primary w-12 h-12 hover:bg-primary/90 text-on-primary-container font-bold text-lg shadow-lg hover:shadow-primary/20 transition-all"
+            className="rounded-full bg-on-surface w-12 h-12 hover:bg-on-surface/90 text-surface font-bold text-lg shadow-lg hover:shadow-on-surface/20 transition-all"
             variant="ghost"
             onClick={handlePlayAll}
           >
@@ -48,8 +48,8 @@ export default function TracksWrapper({
           </Button>
 
           <Button
-            className={`rounded-full w-12 h-12 font-bold text-lg hover:text-primary transition-all ${
-              mode === Mode.shuffle ? "text-primary" : ""
+            className={`rounded-full w-12 h-12 font-bold text-lg hover:text-on-surface transition-all ${
+              mode === Mode.shuffle ? "text-on-surface" : ""
             }`}
             variant="ghost"
             onClick={handleShuffle}

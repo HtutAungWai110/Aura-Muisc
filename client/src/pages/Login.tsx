@@ -21,11 +21,11 @@ const Login = () => {
   }, []);
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden selection:bg-primary selection:text-on-primary text-on-surface font-body-lg">
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden selection:text-surface text-on-surface font-body-lg bg-black/90 dark:bg-black/90">
       {/* Atmospheric Background Elements */}
-      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/20 blur-[120px] rounded-full animate-pulse-slow"></div>
+      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-white/5 blur-[120px] rounded-full animate-pulse-slow"></div>
       <div
-        className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-secondary/10 blur-[120px] rounded-full animate-pulse-slow"
+        className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-white/3 blur-[120px] rounded-full animate-pulse-slow"
         style={{ animationDelay: "2s" }}
       ></div>
 
@@ -34,31 +34,31 @@ const Login = () => {
         {/* Branding Header */}
         <div className="text-center mb-12 animate-in fade-in duration-700">
           <div
-            className="inline-flex items-center justify-center w-32 h-32 mb-6 in-dark:bg-primary/10 bg-black/10 rounded-3xl neon-glow transition-transform"
+            className="inline-flex items-center justify-center w-32 h-32 mb-6 bg-white dark:bg-white/10 rounded-3xl transition-transform"
             style={{ transform: `translateY(${floatY}px)` }}
           >
             <span
-              className="material-symbols-outlined text-primary"
+              className="material-symbols-outlined text-black dark:text-white"
               style={{ fontSize: "80px" }}
             >
               graphic_eq
             </span>
           </div>
-          <h1 className="font-headline-xl text-headline-xl text-on-surface tracking-tighter mb-2">
+          <h1 className="font-headline-xl text-headline-xl text-white tracking-tighter mb-2">
             Aura Music
           </h1>
-          <p className="font-body-lg text-on-surface-variant/80">
+          <p className="font-body-lg text-white/60">
             Electric Sophistication in Every Note
           </p>
         </div>
 
         {/* Login Card */}
-        <div className="in-dark:bg-primary/10 bg-black/10  p-8 rounded-lg shadow-2xl animate-in slide-in-from-bottom-8 duration-700">
+        <div className="bg-white dark:bg-white/10  p-8 rounded-lg shadow-2xl animate-in slide-in-from-bottom-8 duration-700">
           <div className="mb-10 text-center">
-            <h2 className="font-headline-lg text-headline-lg text-on-surface mb-2">
+            <h2 className="font-headline-lg text-headline-lg text-black dark:text-white mb-2">
               Welcome back to Aura
             </h2>
-            <p className="font-body-sm text-on-surface-variant">
+            <p className="font-body-sm text-black/50 dark:text-white/50">
               Your sonic sanctuary awaits.
             </p>
           </div>
@@ -68,7 +68,7 @@ const Login = () => {
             <Button
               onClick={onClick}
               variant="outline"
-              className="w-full h-14 flex items-center justify-center gap-4 text-surface font-bold rounded-full transition-all duration-300 active:scale-95 shadow-lg group border-none"
+              className="w-full h-14 bg-white/10 flex items-center justify-center gap-4 text-white font-bold rounded-3xl transition-all duration-300 active:scale-95 shadow-lg group border border-white/20"
             >
               <svg className="w-6 h-6" viewBox="0 0 24 24">
                 <path
@@ -88,7 +88,7 @@ const Login = () => {
                   fill="#EA4335"
                 ></path>
               </svg>
-              <span className="font-title-md text-black in-dark:text-white">Sign in with Google</span>
+              <span className="font-title-md text-white">Sign in with Google</span>
             </Button>
           </div>
         </div>
@@ -96,31 +96,31 @@ const Login = () => {
         {/* Visualizer Decoration */}
         <div className="flex items-end justify-center gap-1.5 mt-12 h-16 opacity-30">
           <div
-            className="w-1.5 bg-primary rounded-full animate-bounce"
+            className="w-1.5 bg-on-surface rounded-full animate-bounce"
             style={{ height: "40%", animationDuration: "1.2s" }}
           ></div>
           <div
-            className="w-1.5 bg-primary-container rounded-full animate-bounce"
+            className="w-1.5 bg-on-surface-variant rounded-full animate-bounce"
             style={{ height: "70%", animationDuration: "0.8s" }}
           ></div>
           <div
-            className="w-1.5 bg-secondary rounded-full animate-bounce"
+            className="w-1.5 bg-outline rounded-full animate-bounce"
             style={{ height: "100%", animationDuration: "1.5s" }}
           ></div>
           <div
-            className="w-1.5 bg-tertiary rounded-full animate-bounce"
+            className="w-1.5 bg-on-surface-variant rounded-full animate-bounce"
             style={{ height: "60%", animationDuration: "1.1s" }}
           ></div>
           <div
-            className="w-1.5 bg-primary rounded-full animate-bounce"
+            className="w-1.5 bg-on-surface rounded-full animate-bounce"
             style={{ height: "80%", animationDuration: "0.9s" }}
           ></div>
           <div
-            className="w-1.5 bg-secondary-container rounded-full animate-bounce"
+            className="w-1.5 bg-outline rounded-full animate-bounce"
             style={{ height: "50%", animationDuration: "1.4s" }}
           ></div>
           <div
-            className="w-1.5 bg-primary-fixed rounded-full animate-bounce"
+            className="w-1.5 bg-on-surface-variant rounded-full animate-bounce"
             style={{ height: "90%", animationDuration: "1s" }}
           ></div>
         </div>
@@ -129,7 +129,7 @@ const Login = () => {
       {/* Background Artwork Imagery (Bottom Left) */}
       <div className="fixed bottom-[-100px] left-[-100px] w-[400px] h-[400px] -rotate-12 opacity-20 pointer-events-none hidden lg:block">
         <img
-          className="w-full h-full object-cover rounded-xl shadow-2xl"
+          className="w-full h-full object-cover rounded-xl shadow-2xl grayscale"
           src="https://lh3.googleusercontent.com/aida-public/AB6AXuDWmQy8XiOACZcXCb4R0i7vc9opjnonC_0YX6k2Bdsluo1i_kKqL5UJPB9-NolCGjQy7HBelkAp3PL5WcPFZpMbS9QIUFLPQWp7GNaZ24lZJSo16bQ28EBROnzth062RGLlBR2WG1nJddc6A91ncPH5uUvO0dUfow1iVOy3i1815skyqcc8lNZFifEe5hVEH4XGKCRkZvBZqAd9ZYwah21vRt82lpqg5Nrc1EzqB8OUMHk8VYayHQ0Bb8CUqbtBH2O5EYh1I4oJW00"
           alt="Premium vinyl record"
         />
@@ -138,7 +138,7 @@ const Login = () => {
       {/* Background Artwork Imagery (Top Right) */}
       <div className="fixed top-[-100px] right-[-100px] w-[400px] h-[400px] rotate-12 opacity-20 pointer-events-none hidden lg:block">
         <img
-          className="w-full h-full object-cover rounded-xl shadow-2xl"
+          className="w-full h-full object-cover rounded-xl shadow-2xl grayscale"
           src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmKlP244EjL3aZQGZ49kTtY4Eajxos7fIQjxGfDUebBmBsgUyQZAQxGaIrdNJvUy1epEK8YZj9AyQLqA5GtIGaatRlzUdirQA6ZP0RdPWnZM7IEzBP3wZg5lqHg-WHq5WHozL-x9iB6kaViGT-pk6_YYFcwME0VY4DKB3kWsuS0ZeYYAjDYnGn7YIUZVOIYCCiQRSkiRt_3iTSHSmgNDW6ZS_HNGdl4XXziKSLIuzAEaabWAGDkLOMo8pUPKXfjAct04AAerWGoRk"
           alt="Abstract sound waves"
         />

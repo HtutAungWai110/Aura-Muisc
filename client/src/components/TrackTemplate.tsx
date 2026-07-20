@@ -24,7 +24,6 @@ const TrackTemplate = ({
   const isCurrent = currentTrack?._id === track._id;
 
   const handlePlay = (e: React.MouseEvent) => {
-    // If the click was on the options button or within the options menu, don't play
     if ((e.target as HTMLElement).closest(".options-container")) {
       return;
     }
@@ -41,22 +40,22 @@ const TrackTemplate = ({
 
   return (
     <div
-      className={`grid grid-cols-[auto_1fr_auto] sm:grid-cols-5 gap-2 sm:gap-4 px-2 sm:px-4 py-3 rounded-md hover:bg-white/5 group transition-colors cursor-pointer ${isCurrent ? "bg-primary/10" : ""}`}
+      className={`grid grid-cols-[auto_1fr_auto] sm:grid-cols-5 gap-2 sm:gap-4 px-2 sm:px-4 py-3 rounded-md hover:bg-white/5 group transition-colors cursor-pointer ${isCurrent ? "bg-on-surface/5" : ""}`}
       onClick={handlePlay}
     >
       <div className="flex items-center justify-center text-on-surface-variant group-hover:text-on-surface">
         {isCurrent && isPlaying ? (
           <div className="flex items-end gap-0.5 h-3">
             <div
-              className="w-0.5 bg-primary animate-[bounce_1s_infinite]"
+              className="w-0.5 bg-on-surface animate-[bounce_1s_infinite]"
               style={{ height: "60%" }}
             ></div>
             <div
-              className="w-0.5 bg-primary animate-[bounce_1.2s_infinite]"
+              className="w-0.5 bg-on-surface animate-[bounce_1.2s_infinite]"
               style={{ height: "100%" }}
             ></div>
             <div
-              className="w-0.5 bg-primary animate-[bounce_0.8s_infinite]"
+              className="w-0.5 bg-on-surface animate-[bounce_0.8s_infinite]"
               style={{ height: "40%" }}
             ></div>
           </div>
@@ -64,7 +63,7 @@ const TrackTemplate = ({
           <span className="group-hover:hidden">{index + 1}</span>
         )}
         <Play
-          className={`size-4 hidden group-hover:block fill-current ${isCurrent ? "text-primary" : ""}`}
+          className={`size-4 hidden group-hover:block fill-current ${isCurrent ? "text-on-surface" : ""}`}
         />
       </div>
 
@@ -82,7 +81,7 @@ const TrackTemplate = ({
         )}
         <div className="flex flex-col min-w-0">
           <span
-            className={`font-bold truncate text-xs sm:text-sm md:text-base ${isCurrent ? "text-primary" : "text-on-surface"}`}
+            className={`font-bold truncate text-xs sm:text-sm md:text-base ${isCurrent ? "text-on-surface" : "text-on-surface"}`}
           >
             {track.title}
           </span>

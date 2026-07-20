@@ -53,33 +53,33 @@ export default function SettingsPage() {
           </h2>
           <div className="flex items-center gap-5">
             <div className="relative group shrink-0">
-              <div className="absolute -inset-1 bg-gradient-to-br from-primary to-secondary rounded-full blur opacity-40 group-hover:opacity-70 transition duration-300"></div>
+              <div className="absolute -inset-1 bg-gradient-to-br from-on-surface to-outline rounded-full blur opacity-20 group-hover:opacity-40 transition duration-300"></div>
               <img
                 src={userData?.avatar}
                 alt={userData?.displayName}
-                className="relative w-20 h-20 rounded-full object-cover border-2 border-surface-container"
+                className="relative md:w-20 md:h-20 w-15 h-15 rounded-full object-cover border-2 border-surface-container"
               />
             </div>
             <div className="flex flex-col gap-1 min-w-0">
-              <span className="text-primary font-bold font-headline-lg-mobile text-headline-lg-mobile truncate">
+              <span className="text-on-surface font-bold font-headline-lg-mobile text-headline-lg-mobile truncate">
                 {userData?.displayName}
               </span>
-              <span className="text-on-surface-variant font-body-sm text-body-sm truncate">
+              <span className="text-on-surface-variant font-body-sm md:text-body-sm text-sm truncate">
                 {userData?.email}
               </span>
               <div className="flex items-center gap-3 mt-1">
-                <span className="text-on-surface-variant/60 font-label-caps text-label-caps">
+                <span className="text-on-surface-variant/60 font-label-caps md:text-label-caps text-sm">
                   {providerLabel}
                 </span>
                 <span className="w-1 h-1 rounded-full bg-on-surface-variant/30"></span>
-                <span className="text-on-surface-variant/60 font-label-caps text-label-caps">
+                <span className="text-on-surface-variant/60 font-label-caps md:text-label-caps text-sm">
                   Joined {joinDate}
                 </span>
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2 mt-5 bg-primary/10 rounded-full p-2 w-fit">
-            <span className="material-symbols-outlined text-primary text-[18px]">
+          <div className="flex items-center gap-2 mt-5 bg-on-surface/5 rounded-full p-2 w-fit">
+            <span className="material-symbols-outlined text-on-surface text-[18px]">
               library_music
             </span>
             <span className="text-body-sm font-body-sm text-on-surface-variant">
@@ -106,7 +106,7 @@ export default function SettingsPage() {
               </div>
             </div>
             <Switch
-              className="in-dark:bg-primary/10 border border-outline-variant/30 bg-black/10 in-dark:bg-primary/10"
+              className="border border-outline-variant/30"
 
               checked={mode === "dark"}
               onClick={toggleTheme}

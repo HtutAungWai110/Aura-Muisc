@@ -78,13 +78,13 @@
     }, [onClose]);
 
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/30 backdrop-blur-md space-y-6 p-4">
+      <div className="fixed inset-0 z-[999] flex items-center justify-center bg-background/30 backdrop-blur-md space-y-6 p-4">
       <div
         ref={panelRef}
-        className="max-w-[95%] md:max-w-[70%] flex flex-col md:flex-row justify-between gap-5 bg-surface-container-highest/80 backdrop-blur-sm border border-primary/20 rounded-2xl p-4 md:p-8 relative"
+        className="max-w-[95%] md:max-w-[70%] flex flex-col md:flex-row justify-between gap-5 bg-surface-container-highest/80 backdrop-blur-sm border border-on-surface/10 rounded-2xl p-4 md:p-8 relative"
       >
         <button
-          className="absolute top-2 right-2 text-on-surface-variant/hover text-sm hover:bg-primary/10 rounded-full p-1"
+          className="absolute top-2 right-2 text-on-surface-variant text-sm hover:bg-on-surface/10 rounded-full p-1"
           onClick={onClose}
           aria-label="Close"
         >
@@ -105,7 +105,7 @@
                 type="text"
                 value={titleInput}
                 onChange={(e) => setTitleInput(e.target.value)}
-                className="w-full px-4 py-2 border border-primary/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-0 text-on-surface"
+                className="w-full px-4 py-2 border border-on-surface/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-on-surface focus:ring-offset-0 text-on-surface"
                 placeholder="Enter playlist title"
                 autoFocus
               />
@@ -113,7 +113,7 @@
                 <Button
                   variant="outline"
                   size="sm"
-                  className="text-on-surface-variant hover:bg-primary/10"
+                  className="text-on-surface-variant hover:bg-on-surface/10"
                   onClick={onClose}
                 >
                   Cancel
@@ -122,7 +122,7 @@
                   disabled={!titleInput.trim() || updateMutation.isPending}
                   onClick={handleSave}
                   size="sm"
-                  className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center gap-1"
+                  className="bg-on-surface hover:bg-on-surface/90 text-surface font-medium py-2 px-4 rounded-lg transition-colors flex items-center gap-1"
                 >
                   Save
                   {updateMutation.isPending && <Spinner />}

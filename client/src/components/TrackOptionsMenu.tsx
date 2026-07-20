@@ -13,6 +13,7 @@ import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { Button } from "./ui/button";
 import PlaylistSubMenu from "./PlaylistSubMenu";
 import { Spinner } from "./ui/spinner";
+import { useTracksCountStore } from "@/states/TrackCountState";
 
 interface TrackOptionsMenuProps {
   track: Track;
@@ -28,6 +29,7 @@ export default function TrackOptionsMenu({
   const [menuPosition, setMenuPosition] = useState<"bottom" | "top">("bottom");
   const [subMenuVerticalOffset, setSubMenuVerticalOffset] = useState(0);
   const { removeTrackAfterDelete, removeTrack } = usePlaylistStore();
+  const {setTracksCount} = useTracksCountStore()
 
   const containerRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -44,6 +46,7 @@ export default function TrackOptionsMenu({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["Tracks"] });
       removeTrackAfterDelete(track._id);
+      // setTracksCount(-1);
       if (playlistId) {
         queryClient.invalidateQueries({ queryKey: [`Playlist ${playlistId}`] });
         removeTrack(playlistId, track._id);
@@ -96,7 +99,7 @@ export default function TrackOptionsMenu({
       <Button
         variant="ghost"
         size="icon"
-        className="hover:bg-white/10 rounded-full"
+        className="hover:bg-white/10 rounded-full text-black dark:text-white"
         onClick={(e) => {
           e.stopPropagation();
           setIsOpen(!isOpen);

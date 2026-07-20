@@ -34,8 +34,8 @@ const MobileNavItem = ({ icon, label, isActive, path }: NavItemProps) => (
     to={path}
     className={`flex flex-col items-center gap-1 px-4 py-2 rounded-2xl transition-all duration-200 ${
       isActive
-        ? "text-primary-container active-glow"
-        : "text-on-surface-variant"
+        ? "dark:bg-white dark:text-black bg-black text-white active-glow"
+        : "text-on-surface"
     }`}
   >
     <span
@@ -158,7 +158,7 @@ const Sidebar = () => {
       {/* Mobile Top-Right Profile */}
       <Link
         to="/settings"
-        className="md:hidden absolute top-4 right-4 z-[110]"
+        className={ `${checkActive("/settings") ? "hidden" : "block"} md:hidden absolute top-4 right-4 z-[110]`}
       >
         <div className="relative group">
           <div className="absolute -z-10 -inset-1 from-primary to-secondary rounded-full blur opacity-40 group-hover:opacity-70 transition duration-300"></div>

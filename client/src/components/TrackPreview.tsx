@@ -9,7 +9,7 @@ export default function TrackPreviewCard({ track }: { track: TrackPreview }) {
   return (
     <div
       key={id}
-      className="flex flex-col gap-4 p-2 shadow-none w-30 rounded-2xl bg-primary/5 relative"
+      className="flex flex-col gap-4 p-2 shadow-none w-30 rounded-2xl bg-on-surface/5 relative"
     >
       <Button
         className="absolute right-0"
