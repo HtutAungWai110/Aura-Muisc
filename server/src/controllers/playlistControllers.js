@@ -38,11 +38,19 @@ async function createPlaylist(req, res, next) {
 
 async function getAllPlaylists(req, res, next) {
   const userId = req.userId;
+  const pageSize = 10;
+  const pageNumber = Math.max(1, parseInt(req.query.pageNumber) || 1);
+
   try {
-    const playlists = await Playlist.find({ userId: userId })
+    const totalPlaylists = await Playlist.countDocuments({ userId });
+    const totalPage = Math.ceil(totalPlaylists / pageSize);
+
+    const playlists = await Playlist.find({ userId })
       .populate("tracks")
-      .sort({ createdAt: -1 });
-    return res.status(200).json(playlists);
+      .sort({ createdAt: -1 })
+      .limit(pageSize * pageNumber);
+
+    return res.status(200).json({ totalPage, playlists });
   } catch (error) {
     console.error(
       `Failed to fetch playlists, userId: ${userId}, error: ${error.message}`,
@@ -311,6 +319,32 @@ async function deletePlaylist(req, res, next) {
   }
 }
 
+async function searchPlaylists(req, res, next) {
+  const userId = req.userId;
+  const { q } = req.query;
+
+  if (!q || !q.trim()) {
+    return res.status(200).json([]);
+  }
+
+  try {
+    const playlists = await Playlist.find({
+      userId,
+      title: { $regex: q.trim(), $options: "i" },
+    })
+      .populate("tracks")
+      .sort({ createdAt: -1 })
+      .limit(20);
+
+    return res.status(200).json(playlists);
+  } catch (error) {
+    console.error(
+      `Failed to search playlists, userId: ${userId}, error: ${error.message}`,
+    );
+    next(new AppError("Failed to search playlists.", 500));
+  }
+}
+
 export {
   createPlaylist,
   getAllPlaylists,
@@ -321,4 +355,5 @@ export {
   removeTrackFromPlaylist,
   deletePlaylist,
   updatePlaylist,
+  searchPlaylists,
 };
