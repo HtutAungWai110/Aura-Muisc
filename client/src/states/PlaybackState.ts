@@ -24,6 +24,7 @@ interface PlaybackState {
   prevTrack: () => void;
   setMode: (modParam: Mode) => void;
   setLooping: () => void;
+  removeTrackById: (trackId: string) => void;
 }
 
 const shuffleQueue = (queue: Track[]): Track[] => {
@@ -140,5 +141,21 @@ export const usePlaybackState = create<PlaybackState>((set, get) => ({
   setLooping: () => {
     const { isLooping: currentLooping } = get();
     set({ isLooping: !currentLooping });
+  },
+
+  removeTrackById: (trackId) => {
+    const { queue, queueIndex, currentTrack } = get();
+    const newQueue = queue.filter(t => t._id !== trackId);
+    if (currentTrack?._id === trackId) {
+      if (newQueue.length > 0) {
+        const nextIndex = Math.min(queueIndex, newQueue.length - 1);
+        set({ queue: newQueue, queueIndex: nextIndex, currentTrack: newQueue[nextIndex] });
+      } else {
+        set({ queue: [], queueIndex: -1, currentTrack: null, isPlaying: false });
+      }
+    } else {
+      const removedBeforeCurrent = queue.findIndex(t => t._id === trackId) < queueIndex;
+      set({ queue: newQueue, queueIndex: removedBeforeCurrent ? queueIndex - 1 : queueIndex });
+    }
   },
 }));

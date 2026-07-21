@@ -205,7 +205,7 @@ export default function AudioPlayer() {
       {/* Pill (mobile) / Full bar (desktop) */}
       <div
         className={`mx-3 md:mx-0 rounded-full md:rounded-none bg-white/10 md:bg-surface-container/80 backdrop-blur-2xl md:backdrop-blur-xl border border-white/10 md:border-t md:border-white/5 shadow-2xl md:shadow-none h-12 md:h-24 px-5 md:px-8  flex items-center justify-between cursor-pointer md:cursor-default ${isFullScreen ? "md:flex hidden" : ""}`}
-        onClick={() => setIsFullScreen(true)}
+        onClick={() => { if (window.innerWidth < 768) setIsFullScreen(true); }}
       >
         {/* Track Info */}
         <div className="flex items-center gap-2 md:gap-4 w-1/3 min-w-0">

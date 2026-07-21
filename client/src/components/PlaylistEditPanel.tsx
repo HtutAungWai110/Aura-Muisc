@@ -8,7 +8,6 @@
   import { useSuccessStore } from "@/states/SuccessState";
   import { useErrorStore } from "@/states/ErrorState";
   import { Spinner } from "./ui/spinner";
-  import { usePlaylistStore } from "@/states/PlaylistState";
 
   interface PlaylistEditPanelProps {
     playlist: Playlist;
@@ -25,7 +24,6 @@
     const queryClient = useQueryClient();
     const { setSuccessMessage } = useSuccessStore();
     const { setError } = useErrorStore();
-    const { updatePlaylist } = usePlaylistStore();
 
     const handleCoverUploaded = (url: string) => {
       setCoverPhotoUrl(url);
@@ -42,7 +40,6 @@
       onSuccess: (data) => {
         setSuccessMessage(data.message);
         queryClient.invalidateQueries({ queryKey: [`Playlist ${playlist._id}`] });
-        updatePlaylist(playlist._id, data.playlist);
         onClose();
       },
       onError: (error) => {
@@ -113,7 +110,6 @@
                 <Button
                   variant="outline"
                   size="sm"
-                  className="text-on-surface-variant hover:bg-on-surface/10"
                   onClick={onClose}
                 >
                   Cancel

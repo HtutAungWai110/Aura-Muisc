@@ -7,6 +7,7 @@ import {
   getCoverUploadUrl,
   updateCoverPhoto,
   removeTrackFromPlaylist,
+  removeTracksFromPlaylist,
   deletePlaylist,
   updatePlaylist,
   searchPlaylists,
@@ -70,6 +71,8 @@ router.delete(
   paramValidationMiddleware(playlistAndTrackIdSchema),
   removeTrackFromPlaylist,
 );
+
+router.post("/remove/:id/tracks", authMiddleware, removeTracksFromPlaylist);
 
 router.delete(
   "/delete/:id",

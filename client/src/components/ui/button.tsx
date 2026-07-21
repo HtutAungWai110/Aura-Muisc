@@ -10,13 +10,13 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-on-surface text-surface hover:bg-on-surface/90 dark:bg-surface dark:text-on-surface dark:hover:bg-surface/90",
+        default: "bg-on-surface text-surface",
         outline:
-          "border-on-surface/20 bg-transparent text-on-surface hover:bg-on-surface/10 dark:border-surface/20 dark:text-surface dark:hover:bg-surface/10",
+          "text-on-surface border border-on-surface/50 hover:bg-on-surface/10",
         secondary:
           "bg-on-surface/10 text-on-surface hover:bg-on-surface/20 dark:bg-surface/10 dark:text-surface dark:hover:bg-surface/20",
         ghost:
-          "hover:bg-on-surface/10 text-on-surface dark:hover:bg-surface/10 dark:text-surface",
+          "text-on-surface",
         destructive:
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
         link: "text-primary underline-offset-4 hover:underline",

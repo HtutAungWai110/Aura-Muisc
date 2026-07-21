@@ -14,7 +14,7 @@ import PlaylistEditPanel from "@/components/PlaylistEditPanel";
 
 export default function PlaylistPage() {
   const { id } = useParams<{ id: string }>();
-  const { getPlaylist } = usePlaylistStore();
+  const { getPlaylist, updatePlaylist } = usePlaylistStore();
   const initialData = getPlaylist(id);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -36,7 +36,7 @@ export default function PlaylistPage() {
     queryKey: [`Playlist ${id}`],
     queryFn: async () => {
       const res = await apiClient.get(`/api/playlist/${id}`);
-
+      updatePlaylist(id, res.data);
       return res.data;
     },
     retry: false,

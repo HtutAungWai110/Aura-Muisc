@@ -11,6 +11,9 @@ interface TrackTemplateProps {
   index: number;
   allTracks?: Track[];
   playlistId?: string | null;
+  onSelect?: (trackId: string) => void;
+  isSelecting?: boolean;
+  selected: boolean;
 }
 
 const TrackTemplate = ({
@@ -18,9 +21,13 @@ const TrackTemplate = ({
   index,
   allTracks,
   playlistId = null,
+  onSelect,
+  isSelecting,
+  selected,
 }: TrackTemplateProps) => {
   const { currentTrack, isPlaying, setCurrentTrack, setTracks, togglePlay } =
     usePlaybackState();
+
   const isCurrent = currentTrack?._id === track._id;
 
   const handlePlay = (e: React.MouseEvent) => {
@@ -100,7 +107,7 @@ const TrackTemplate = ({
       </div>
 
       <div className="flex items-center justify-center options-container">
-        <TrackOptionsMenu track={track} playlistId={playlistId} />
+        <TrackOptionsMenu track={track} playlistId={playlistId} onSelect={onSelect} isSelecting={isSelecting} selected={selected} />
       </div>
     </div>
   );

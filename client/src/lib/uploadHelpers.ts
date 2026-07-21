@@ -54,6 +54,65 @@ export function putWithProgress(
   });
 }
 
+export async function uploadMultipleTracks(
+  tracks: TrackPreview[],
+  onProgress: (trackId: string, pct: number) => void,
+) {
+  const durations = await Promise.all(
+    tracks.map((t) => getAudioDuration(t.rawFile)),
+  );
+
+  const { data: urlData } = await apiClient.post(
+    "/api/track/get-batch-upload-urls",
+    {
+      files: tracks.map((t) => ({
+        audioFilename: t.rawFile.name,
+        audioFileType: t.rawFile.type,
+        ...(t.thumbnailUrl
+          ? {
+              imageFilename: `thumb-${t.name}.jpg`,
+              imageFileType: "image/jpeg",
+            }
+          : {}),
+      })),
+    },
+  );
+
+  await Promise.all(
+    urlData.map(async (entry: any, i: number) => {
+      const track = tracks[i];
+      await putWithProgress(
+        entry.audio.uploadUrl,
+        track.rawFile,
+        track.rawFile.type || "audio/mpeg",
+        (pct) => onProgress(track.id, pct),
+      );
+      if (track.thumbnailUrl && entry.image) {
+        await putWithProgress(
+          entry.image.uploadUrl,
+          dataUriToBlob(track.thumbnailUrl),
+          "image/jpeg",
+        );
+      }
+    }),
+  );
+
+  const { data: savedTracks } = await apiClient.post(
+    "/api/track/save-batch-metadata",
+    {
+      tracks: urlData.map((entry: any, i: number) => ({
+        title: tracks[i].title,
+        artist: tracks[i].artist,
+        audioStoragePath: entry.audio.storagePath,
+        imageStoragePath: entry.image?.storagePath ?? null,
+        duration: durations[i],
+      })),
+    },
+  );
+
+  return savedTracks;
+}
+
 export async function uploadSingleTrack(
   track: TrackPreview,
   onProgress: (trackId: string, pct: number) => void,

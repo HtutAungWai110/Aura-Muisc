@@ -255,6 +255,50 @@ async function updatePlaylist(req, res, next) {
   }
 }
 
+async function removeTracksFromPlaylist(req, res, next) {
+  const { id } = req.params;
+  const { trackIds } = req.body;
+  const userId = req.userId;
+
+  if (!trackIds || !Array.isArray(trackIds) || trackIds.length === 0) {
+    return next(new AppError("trackIds array is required", 400));
+  }
+
+  try {
+    const targetPlaylist = await Playlist.findOne({
+      _id: id,
+      userId: userId,
+    }).populate("tracks");
+
+    if (!targetPlaylist) {
+      return next(new AppError("Playlist not found", 404));
+    }
+
+    const keyPairs = targetPlaylist.tracks.map((track) => [
+      track._id.toString(),
+      track,
+    ]);
+    const tracksMap = new Map(keyPairs);
+
+    trackIds.forEach((tid) => tracksMap.delete(tid));
+
+    const updatedTracks = Array.from(tracksMap.keys());
+
+    const updatedPlaylist = await Playlist.updateOne(
+      { _id: id },
+      { $set: { tracks: updatedTracks } },
+    );
+
+    res.json({
+      message: `${trackIds.length} track(s) removed successfully`,
+      updatedPlaylist,
+    });
+  } catch (error) {
+    console.error("Failed to remove tracks from playlist: ", error.message);
+    next(new AppError("Failed to remove tracks from playlist", 500));
+  }
+}
+
 async function removeTrackFromPlaylist(req, res, next) {
   const { id, trackId } = req.params;
   const userId = req.userId;
@@ -353,6 +397,7 @@ export {
   getCoverUploadUrl,
   updateCoverPhoto,
   removeTrackFromPlaylist,
+  removeTracksFromPlaylist,
   deletePlaylist,
   updatePlaylist,
   searchPlaylists,

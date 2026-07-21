@@ -3,7 +3,7 @@ import { useTrackImportsState } from "@/states/TrackImportsState";
 import { useMutation } from "@tanstack/react-query";
 import { Spinner } from "./ui/spinner";
 import { useErrorStore } from "@/states/ErrorState";
-import { uploadSingleTrack } from "@/lib/uploadHelpers";
+import { uploadMultipleTracks } from "@/lib/uploadHelpers";
 import { useUploadStore } from "@/states/UploadState"
 import { useQueryClient } from "@tanstack/react-query";
 import { useTracksCountStore } from "@/states/TrackCountState";
@@ -31,12 +31,10 @@ export default function UploadTracksBtn() {
 
       (async () => {
         try {
-          for (const track of tracks) {
-            await uploadSingleTrack(track, (trackId, pct) => {
-              setFileProgress(newKey, trackId, pct);
-            });
-            setTracksCount(1);
-          }
+          await uploadMultipleTracks(tracks, (trackId, pct) => {
+            setFileProgress(newKey, trackId, pct);
+          });
+          setTracksCount(tracks.length);
           queryClient.invalidateQueries({ queryKey: ["Tracks"] });
         } catch (err) {
           const msg =

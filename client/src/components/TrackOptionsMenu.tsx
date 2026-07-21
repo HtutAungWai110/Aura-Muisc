@@ -1,13 +1,15 @@
 import { usePlaylistStore } from "@/states/PlaylistState";
+import { usePlaybackState } from "@/states/PlaybackState";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import apiClient from "@/lib/apiClient";
 import type { Track } from "@/types/TrackType";
+import { Checkbox } from "./ui/checkbox";
 import {
   MoreVertical,
-  Pencil,
   ListPlus,
   ChevronRight,
   Trash2,
+  CheckCircle,
 } from "lucide-react";
 import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { Button } from "./ui/button";
@@ -18,18 +20,25 @@ import { useTracksCountStore } from "@/states/TrackCountState";
 interface TrackOptionsMenuProps {
   track: Track;
   playlistId?: string | null;
+  onSelect?: (trackId: string) => void;
+  isSelecting?: boolean;
+  selected?: boolean;
 }
 
 export default function TrackOptionsMenu({
   track,
   playlistId = null,
+  onSelect,
+  isSelecting,
+  selected,
 }: TrackOptionsMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubMenuOpen, setIsSubMenuOpen] = useState(false);
   const [menuPosition, setMenuPosition] = useState<"bottom" | "top">("bottom");
   const [subMenuVerticalOffset, setSubMenuVerticalOffset] = useState(0);
-  const { removeTrackAfterDelete, removeTrack } = usePlaylistStore();
+  const { removeTrackAfterDelete } = usePlaylistStore();
   const {setTracksCount} = useTracksCountStore()
+  const removeTrackById = usePlaybackState(s => s.removeTrackById);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -46,10 +55,10 @@ export default function TrackOptionsMenu({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["Tracks"] });
       removeTrackAfterDelete(track._id);
-      // setTracksCount(-1);
       if (playlistId) {
         queryClient.invalidateQueries({ queryKey: [`Playlist ${playlistId}`] });
-        removeTrack(playlistId, track._id);
+      } else {
+        removeTrackById(track._id);
       }
       setIsOpen(false);
     },
@@ -96,17 +105,21 @@ export default function TrackOptionsMenu({
       className="relative flex items-center justify-center "
       ref={containerRef}
     >
-      <Button
-        variant="ghost"
-        size="icon"
-        className="hover:bg-white/10 rounded-full text-black dark:text-white"
-        onClick={(e) => {
-          e.stopPropagation();
-          setIsOpen(!isOpen);
-        }}
-      >
-        <MoreVertical className="size-4" />
-      </Button>
+      {
+        isSelecting ?
+          <Checkbox className=" dark:bg-white text-black border" checked={selected} onClick={() => onSelect(track._id)} /> :
+          <Button
+            variant="ghost"
+            size="icon"
+            className="hover:bg-white/10 rounded-full text-black dark:text-white"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsOpen(!isOpen);
+            }}
+          >
+            <MoreVertical className="size-4" />
+          </Button>
+      }
 
       {isOpen && (
         <div
@@ -116,9 +129,12 @@ export default function TrackOptionsMenu({
           }`}
           onClick={(e) => e.stopPropagation()}
         >
-          <button className="w-full px-4 py-2 text-left hover:bg-white/5 flex items-center gap-2 transition-colors">
-            <Pencil className="size-3.5" />
-            Edit
+          <button onClick={() => {
+            onSelect(track._id)
+            setIsOpen(false);
+          }} className="w-full px-4 py-2 text-left hover:bg-white/5 flex items-center gap-2 transition-colors">
+            <CheckCircle className="size-3.5" />
+            Select
           </button>
 
           <div

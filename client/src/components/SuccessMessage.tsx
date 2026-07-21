@@ -25,8 +25,7 @@ export default function SuccessMessage() {
             </AlertDescription>
             <AlertAction>
               <Button
-                variant="ghost"
-                className="hover:bg-white/10 text-on-surface border border-white/20"
+                variant="outline"
                 onClick={() => setSuccessMessageNull()}
               >
                 Close
