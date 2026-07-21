@@ -204,7 +204,7 @@ export default function AudioPlayer() {
 
       {/* Pill (mobile) / Full bar (desktop) */}
       <div
-        className={`mx-3 md:mx-0 rounded-full md:rounded-none bg-white/10 md:bg-surface-container/80 backdrop-blur-2xl md:backdrop-blur-xl border border-white/10 md:border-t md:border-white/5 shadow-2xl md:shadow-none h-12 md:h-24 px-3 md:px-8 flex items-center justify-between cursor-pointer md:cursor-default ${isFullScreen ? "md:flex hidden" : ""}`}
+        className={`mx-3 md:mx-0 rounded-full md:rounded-none bg-white/10 md:bg-surface-container/80 backdrop-blur-2xl md:backdrop-blur-xl border border-white/10 md:border-t md:border-white/5 shadow-2xl md:shadow-none h-12 md:h-24 px-5 md:px-8  flex items-center justify-between cursor-pointer md:cursor-default ${isFullScreen ? "md:flex hidden" : ""}`}
         onClick={() => setIsFullScreen(true)}
       >
         {/* Track Info */}
@@ -254,7 +254,7 @@ export default function AudioPlayer() {
             <Button
               variant="ghost"
               size="icon"
-              className="rounded-full bg-on-surface w-12 h-12 hover:bg-on-surface/90 text-surface font-bold text-lg shadow-lg hover:shadow-on-surface/20 transition-all"
+              className="rounded-full bg-on-surface w-10 h-10 hover:bg-on-surface/90 text-surface font-bold text-lg shadow-lg hover:shadow-on-surface/20 transition-all"
               onClick={(e) => { e.stopPropagation(); togglePlay(); }}
             >
               {isPlaying ? (
@@ -358,7 +358,7 @@ export default function AudioPlayer() {
             onDragEnd={(_, info) => {
               if (info.offset.y > 150) setIsFullScreen(false);
             }}
-            className="md:hidden fixed inset-0 z-[300] bg-gradient-to-b from-surface-container to-background flex flex-col justify-between px-6 py-4 overflow-y-auto"
+            className="md:hidden fixed inset-0 z-[300] bg-gradient-to-b from-surface-container to-background flex flex-col justify-between px-6 py-5 overflow-y-auto"
           >
           {/* Header */}
           <div className="flex items-center justify-between mb-6">

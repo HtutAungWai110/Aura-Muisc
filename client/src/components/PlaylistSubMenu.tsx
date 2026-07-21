@@ -4,7 +4,7 @@ import apiClient from "@/lib/apiClient";
 import type { Track } from "@/types/TrackType";
 import { useErrorStore } from "@/states/ErrorState";
 import { Check, Search } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import type { Playlist } from "@/types/PlaylistType";
 
 interface PlaylistSubMenuProps {
@@ -18,9 +18,39 @@ export default function PlaylistSubMenu({
   onClose,
   position,
 }: PlaylistSubMenuProps) {
-  const { trackExist, addTrack, playlists, removeTrack } = usePlaylistStore();
+  const {
+    trackExist,
+    addTrack,
+    playlists,
+    removeTrack,
+    addMissingPlaylists,
+  } = usePlaylistStore();
   const [search, setSearch] = useState<string>("");
   const { setError } = useErrorStore();
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
+
+  useEffect(() => {
+    if (!search.trim()) return;
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const res = await apiClient.get(
+          `/api/playlist/search?q=${encodeURIComponent(search.trim())}`,
+        );
+        if (res.data.length > 0) {
+          addMissingPlaylists(res.data);
+        }
+      } catch {
+        // search failed silently
+      }
+    }, 1000);
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [search, addMissingPlaylists]);
 
   const addToPlaylistMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -40,6 +70,10 @@ export default function PlaylistSubMenu({
     },
   });
 
+  const filtered = playlists.filter((p: Playlist) =>
+    p.title.toLowerCase().includes(search.toLowerCase().trim()),
+  );
+
   return (
     <div
       className={`absolute ${position === "left" ? "right-full" : "left-full"} sm:-top-10 -top-9 p-1  w-40 sm:w-48 max-h-64 bg-surface-container-highest border border-white/10 rounded-lg shadow-2xl z-[60] overflow-y-auto`}
@@ -56,36 +90,32 @@ export default function PlaylistSubMenu({
           placeholder="Search playlist"
         />
       </div>
-      {playlists.length === 0 ? (
+      {filtered.length === 0 ? (
         <div className="p-4 text-xs text-on-surface-variant italic text-center">
           No playlists found
         </div>
       ) : (
-        playlists
-          .filter((p: Playlist) =>
-            p.title.toLowerCase().includes(search.toLowerCase().trim()),
-          )
-          .map((p) => (
-            <button
-              key={p._id}
-              disabled={trackExist(p._id, track._id)}
-              onClick={(e) => {
-                e.stopPropagation();
-                addToPlaylistMutation.mutate(p._id);
-              }}
-              className="w-full p-2 my-0.5 rounded-lg text-left hover:bg-on-surface/10 flex justify-between items-center gap-2 transition-colors truncate disabled:opacity-50"
-            >
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined">
-                  library_music
-                </span>
-                <span className="truncate">{p.title}</span>
-              </div>
-              {trackExist(p._id, track._id) && (
-                <Check className="w-4 h-4 text-on-surface" />
-              )}
-            </button>
-          ))
+        filtered.map((p) => (
+          <button
+            key={p._id}
+            disabled={trackExist(p._id, track._id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              addToPlaylistMutation.mutate(p._id);
+            }}
+            className="w-full p-2 my-0.5 rounded-lg text-left hover:bg-on-surface/10 flex justify-between items-center gap-2 transition-colors truncate disabled:opacity-50"
+          >
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined">
+                library_music
+              </span>
+              <span className="truncate">{p.title}</span>
+            </div>
+            {trackExist(p._id, track._id) && (
+              <Check className="w-4 h-4 text-on-surface" />
+            )}
+          </button>
+        ))
       )}
     </div>
   );

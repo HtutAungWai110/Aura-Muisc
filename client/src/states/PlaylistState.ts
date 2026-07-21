@@ -5,11 +5,15 @@ import type { Track } from "@/types/TrackType";
 
 interface PlaylistStore {
   playlists: Playlist[] | [];
+  currentPage: number;
+  totalPages: number;
   isPending: boolean;
+  isLoadingMore: boolean;
   error: string | null;
-  fetchPlaylists: () => void;
+  fetchPlaylists: (page?: number) => void;
   setPlaylists: (payload: Playlist[]) => void;
   addPlaylist: (payload: Playlist) => void;
+  addMissingPlaylists: (payload: Playlist[]) => void;
   getPlaylist: (id: string) => Playlist;
   updatePlaylist: (id: string, payload: Playlist) => void;
   addTrack: (id: string, payload: Track) => void;
@@ -21,14 +25,33 @@ interface PlaylistStore {
 
 export const usePlaylistStore = create<PlaylistStore>((set, get) => ({
   playlists: [],
+  currentPage: 1,
+  totalPages: 1,
   isPending: true,
+  isLoadingMore: false,
   error: null,
-  fetchPlaylists: async () => {
+  fetchPlaylists: async (page = 1) => {
     try {
-      const res = await apiClient.get("/api/playlist/all");
-      set({ playlists: res.data, isPending: false });
-    } catch (_) {
-      set({ isPending: false });
+      if (page > 1) {
+        set({ isLoadingMore: true });
+      } else {
+        set({ isPending: true });
+      }
+
+      const res = await apiClient.get(
+        `/api/playlist/all?pageNumber=${page}`,
+      );
+      const { totalPage, playlists } = res.data;
+
+      set(({
+        playlists: playlists,
+        currentPage: page,
+        totalPages: totalPage,
+        isPending: false,
+        isLoadingMore: false,
+      }));
+    } catch {
+      set({ isPending: false, isLoadingMore: false });
     }
   },
   setPlaylists: (payload) => {
@@ -37,6 +60,14 @@ export const usePlaylistStore = create<PlaylistStore>((set, get) => ({
   addPlaylist: (payload) => {
     const { playlists } = get();
     set({ playlists: [payload, ...playlists] });
+  },
+  addMissingPlaylists: (payload) => {
+    const { playlists } = get();
+    const existingIds = new Set(playlists.map((p) => p._id));
+    const newPlaylists = payload.filter((p) => !existingIds.has(p._id));
+    if (newPlaylists.length > 0) {
+      set({ playlists: [...playlists, ...newPlaylists] });
+    }
   },
   updatePlaylist: (id, payload) => {
     const { playlists } = get();
