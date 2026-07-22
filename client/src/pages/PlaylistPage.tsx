@@ -44,6 +44,7 @@ export default function PlaylistPage() {
     initialData: initialData,
   });
 
+
   const handleOpenMenu = (event: MouseEvent) => {
     setAnchorEl(event.currentTarget as HTMLElement);
   };

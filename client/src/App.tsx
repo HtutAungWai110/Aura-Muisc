@@ -11,14 +11,11 @@ import PlaylistsPage from "./pages/PlaylistsPage";
 import AuthCallback from "./pages/AuthCallback";
 
 function App() {
-  const { fetchUserData, userData } = useUser();
+  const { fetchUserData } = useUser();
   useEffect(() => {
     fetchUserData();
   }, [fetchUserData]);
 
-  useEffect(() => {
-    console.log(userData);
-  }, [userData]);
 
   return (
     <BrowserRouter>

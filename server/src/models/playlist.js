@@ -10,7 +10,12 @@ const Playlist = mongoose.model(
       required: true,
     },
     existCount: { type: Number, default: 0 },
-    tracks: [{ type: mongoose.Schema.Types.ObjectId, ref: "Track" }],
+    tracks: [
+      {
+        track: { type: mongoose.Schema.Types.ObjectId, ref: "Track" },
+        addedAt: { type: Date, default: Date.now },
+      },
+    ],
     createdAt: { type: Date, default: Date.now() },
     coverPhotoUrl: { type: String, default: null },
   }),

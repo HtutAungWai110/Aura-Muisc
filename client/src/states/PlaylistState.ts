@@ -41,10 +41,13 @@ export const usePlaylistStore = create<PlaylistStore>((set, get) => ({
       const res = await apiClient.get(
         `/api/playlist/all?pageNumber=${page}`,
       );
-      const { totalPage, playlists } = res.data;
+      const { totalPage, playlists: data } = res.data;
+      console.log(data)
+      const { playlists: existingPlaylists } = get();
 
       set(({
-        playlists: playlists,
+
+        playlists: [...existingPlaylists, ...data.filter((p: Playlist) => !existingPlaylists.some((ep: Playlist) => ep._id === p._id))],
         currentPage: page,
         totalPages: totalPage,
         isPending: false,
@@ -73,7 +76,7 @@ export const usePlaylistStore = create<PlaylistStore>((set, get) => ({
     const { playlists } = get();
     const updatedPlaylist = playlists.map((p: Playlist) => {
       if (p._id === id) {
-        return payload;
+        return {...payload, tracks: [...p.tracks, ...payload.tracks.filter((t: Track) => !p.tracks.some((pt: Track) => pt._id === t._id))]};
       }
       return p;
     });
@@ -90,7 +93,8 @@ export const usePlaylistStore = create<PlaylistStore>((set, get) => ({
       if (p._id === id) {
         return {
           ...p,
-          tracks: [...p.tracks, payload],
+          tracksCount: p.tracksCount + 1,
+          tracks: [{ ...payload, addedAt: new Date().toISOString() }, ...p.tracks],
         };
       }
       return p;
@@ -103,6 +107,7 @@ export const usePlaylistStore = create<PlaylistStore>((set, get) => ({
       if (p._id === id) {
         return {
           ...p,
+          tracksCount: p.tracksCount - 1,
           tracks: p.tracks.filter((t: Track) => t._id != trackId),
         };
       }
@@ -122,6 +127,7 @@ export const usePlaylistStore = create<PlaylistStore>((set, get) => ({
     const updatedPlaylists = playlists.map((p: Playlist) => {
       return {
         ...p,
+        tracksCount: p.tracksCount - 1,
         tracks: p.tracks.filter((t: Track) => t._id !== trackId),
       };
     });

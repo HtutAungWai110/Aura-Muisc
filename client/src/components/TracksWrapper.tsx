@@ -146,7 +146,7 @@ export default function TracksWrapper({
       <div className="flex flex-col mt-2">
         {tracks.map((track, index) => (
           <TrackTemplate
-            key={track._id}
+            key={index}
             track={track}
             index={index}
             allTracks={tracks}

@@ -10,31 +10,31 @@ async function seedTestUser() {
     const playlists = [
       {
         title: "my playlist",
-        userId: "6a5ce1600bf2771b92b7fb9f",
+        userId: "6a11557f819a3493e4a9efef",
       },
       {
         title: "my playlist",
-        userId: "6a5ce1600bf2771b92b7fb9f",
+        userId: "6a11557f819a3493e4a9efef",
       },
       {
         title: "my playlist",
-        userId: "6a5ce1600bf2771b92b7fb9f",
+        userId: "6a11557f819a3493e4a9efef",
       },
       {
         title: "my playlist",
-        userId: "6a5ce1600bf2771b92b7fb9f",
+        userId: "6a11557f819a3493e4a9efef",
       },
       {
         title: "my playlist",
-        userId: "6a5ce1600bf2771b92b7fb9f",
+        userId: "6a11557f819a3493e4a9efef",
       },
       {
         title: "my playlist",
-        userId: "6a5ce1600bf2771b92b7fb9f",
+        userId: "6a11557f819a3493e4a9efef",
       },
       {
         title: "my playlist",
-        userId: "6a5ce1600bf2771b92b7fb9f",
+        userId: "6a11557f819a3493e4a9efef",
       }
     ]
 

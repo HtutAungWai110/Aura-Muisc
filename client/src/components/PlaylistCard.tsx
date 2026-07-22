@@ -7,7 +7,7 @@ interface PlaylistCardProps {
 }
 
 export default function PlaylistCard({ playlist }: PlaylistCardProps) {
-  const trackCount = playlist.tracks.length;
+
 
   return (
     <Link to={`/playlist/${playlist._id}`} className="sm:w-50 w-40">
@@ -40,7 +40,7 @@ export default function PlaylistCard({ playlist }: PlaylistCardProps) {
             {playlist.title}
           </h3>
           <p className="text-on-surface-variant text-sm font-label-caps opacity-70">
-            {trackCount} {trackCount === 1 ? "Track" : "Tracks"}
+            {playlist.tracksCount} {playlist.tracksCount === 1 ? "Track" : "Tracks"}
           </p>
         </div>
       </div>

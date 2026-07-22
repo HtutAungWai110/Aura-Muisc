@@ -219,12 +219,15 @@ async function saveBatchMetadata(req, res, next) {
 async function getTracks(req, res, next) {
   try {
     const userId = req.userId;
+    const { page } = req.query;
+    const limit = 5;
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const tracks = await Track.find({ userId: userId }).sort({ addedAt: -1 });
-    return res.json(tracks);
+    const tracks = await Track.find({ userId: userId }).sort({ addedAt: -1 }).skip((page - 1) * limit).limit(limit);
+    const totalPages = Math.ceil(await Track.countDocuments({ userId: userId }) / limit);
+    return res.json({ tracks, totalPages, currentPage: Number(page) });
   } catch (error) {
     console.error("Error fetching tracks:", error);
     next(new AppError("Failed to fetch tracks. Please try again."), 500);

@@ -4,7 +4,8 @@ export type Playlist = {
   _id: string;
   title: string;
   userId: string;
-  tracks: Track[];
+  tracksCount: number;
+  tracks: (Track & { addedAt?: string })[];
   createdAt: Date;
   coverPhotoUrl: string | null;
 };

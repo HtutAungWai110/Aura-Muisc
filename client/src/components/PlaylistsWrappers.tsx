@@ -92,7 +92,7 @@ export default function PlaylistsWrapper() {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-        {uniquePlaylists.map((playlist, index) => {
+        {uniquePlaylists.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((playlist, index) => {
           if (index + 1 > 5 && !isPlaylistsPage) return null;
           return <PlaylistCard key={playlist._id} playlist={playlist} />;
         })}

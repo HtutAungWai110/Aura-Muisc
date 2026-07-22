@@ -3,26 +3,43 @@ import apiClient from "@/lib/apiClient";
 import TrackPreviewWrapper from "@/components/TrackPreviewsWrapper";
 import TracksWrapper from "@/components/TracksWrapper";
 import { useTrackImportsState } from "@/states/TrackImportsState";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import PlaylistsWrapper from "@/components/PlaylistsWrappers";
-import { usePlaybackState } from "@/states/PlaybackState";
-import { useEffect } from "react";
+import { Spinner } from "@/components/ui/spinner";
+import { useInfiniteScrollObserver } from "@/hooks/useInfiniteScrollObserver";
+
 export default function Library() {
   const { previewTracks } = useTrackImportsState();
-  const { mode } = usePlaybackState();
-  const { data: tracks, isLoading } = useQuery({
+
+  const {
+    data,
+    isLoading,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  } = useInfiniteQuery({
     queryKey: ["Tracks"],
-    queryFn: async () => {
-      const res = await apiClient.get("/api/track/all");
+    queryFn: async ({ pageParam = 1 }) => {
+      const res = await apiClient.get(`/api/track/all?page=${pageParam}`);
       return res.data;
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      if (lastPage.currentPage < lastPage.totalPages) {
+        return lastPage.currentPage + 1;
+      }
+      return undefined;
     },
     retryOnMount: false,
     retry: false,
   });
 
-  useEffect(() => {
-    console.log(mode);
-  }, [mode]);
+  const tracks = data?.pages.flatMap((page) => page.tracks) ?? [];
+
+  const { sentinelRef } = useInfiniteScrollObserver({
+    onIntersect: fetchNextPage,
+    enabled: hasNextPage ?? false,
+  });
 
   return (
     <main className="md:ml-80 min-h-screen p-container-padding-mobile md:p-container-padding-desktop flex flex-col items-center justify-start relative overflow-hidden pb-32">
@@ -52,17 +69,17 @@ export default function Library() {
 
         {isLoading ? (
           <div className="flex justify-center py-10">
-            <span className="text-on-surface-variant">Loading library...</span>
+            <Spinner className="size-8 text-on-surface" />
           </div>
         ) : (
-          tracks && (
-            <>
-              <TracksWrapper tracks={tracks} />
-            </>
-          )
+          <>
+            <TracksWrapper tracks={tracks} />
+            <div ref={sentinelRef} className="flex justify-center py-6">
+              {isFetchingNextPage && <Spinner className="size-6 text-on-surface" />}
+            </div>
+          </>
         )}
       </section>
-
     </main>
   );
 }

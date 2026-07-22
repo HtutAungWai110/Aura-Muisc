@@ -6,6 +6,14 @@ import { deleteStorageFile } from "../lib/storage.js";
 
 const BUCKET = "music-assets";
 
+function transformTracks(entries) {
+  if (!entries || !Array.isArray(entries)) return [];
+  return entries
+    .filter((e) => e.track)
+    .sort((a, b) => new Date(b.addedAt) - new Date(a.addedAt))
+    .map((e) => ({ ...e.track.toObject(), addedAt: e.addedAt }));
+}
+
 async function createPlaylist(req, res, next) {
   try {
     const { playlistTitle } = req.body;
@@ -46,11 +54,20 @@ async function getAllPlaylists(req, res, next) {
     const totalPage = Math.ceil(totalPlaylists / pageSize);
 
     const playlists = await Playlist.find({ userId })
-      .populate("tracks")
+      .populate("tracks.track")
       .sort({ createdAt: -1 })
-      .limit(pageSize * pageNumber);
+      .skip((pageNumber - 1) * pageSize)
+      .limit(pageSize);
 
-    return res.status(200).json({ totalPage, playlists });
+
+
+    const result = playlists.map((p) => ({
+      ...p.toObject(),
+      tracksCount: p.tracks.length,
+      tracks: transformTracks(p.tracks),
+    }));
+
+    return res.status(200).json({ totalPage, playlists: result });
   } catch (error) {
     console.error(
       `Failed to fetch playlists, userId: ${userId}, error: ${error.message}`,
@@ -70,13 +87,19 @@ async function getPlaylist(req, res, next) {
     const playlist = await Playlist.findOne({
       _id: id,
       userId: userId,
-    }).populate("tracks");
+    }).populate("tracks.track");
 
     if (!playlist) {
       next(new AppError("Playlist not found.", 404));
     }
 
-    return res.status(200).json(playlist);
+    const result = {
+      ...playlist.toObject(),
+      tracks: transformTracks(playlist.tracks),
+      tracksCount: playlist.tracks.length,
+    };
+
+    return res.status(200).json(result);
   } catch (error) {
     console.error("Failed to fetch playlist, error: ", error.message);
     next(new AppError("Failed to fetch playlist. Try again later.", 500));
@@ -96,20 +119,12 @@ async function addTrackToPlaylist(req, res, next) {
       if (!trackExist) {
         next(new AppError("Track trying to add not found.", 404));
       }
-      const updatedPlaylist = await Playlist.findOneAndUpdate(
-        {
-          _id: id,
-          userId: userId,
-        },
-        {
-          $addToSet: { tracks: trackId },
-        },
-        {
-          new: true,
-          runValidators: true,
-        },
-      ).populate("tracks");
-      if (!updatedPlaylist) {
+      const playlist = await Playlist.findOne({
+        _id: id,
+        userId: userId,
+      });
+
+      if (!playlist) {
         return next(
           new AppError(
             "Playlist not found or you do not have permission to edit it",
@@ -118,7 +133,26 @@ async function addTrackToPlaylist(req, res, next) {
         );
       }
 
-      return res.json(updatedPlaylist);
+      const alreadyExists = playlist.tracks.some(
+        (entry) => entry.track === trackId,
+      );
+
+      if (alreadyExists) {
+        return res.json({
+          ...playlist.toObject(),
+          tracks: transformTracks(playlist.tracks),
+        });
+      }
+
+      playlist.tracks.push({ track: trackId, addedAt: new Date() });
+      await playlist.save();
+
+      const populated = await playlist.populate("tracks.track");
+
+      return res.json({
+        ...populated.toObject(),
+        tracks: transformTracks(populated.tracks),
+      });
     } catch (error) {
       console.error("Failed to add track to playlist: ", error.message);
       next(
@@ -268,30 +302,20 @@ async function removeTracksFromPlaylist(req, res, next) {
     const targetPlaylist = await Playlist.findOne({
       _id: id,
       userId: userId,
-    }).populate("tracks");
+    })
 
     if (!targetPlaylist) {
       return next(new AppError("Playlist not found", 404));
     }
 
-    const keyPairs = targetPlaylist.tracks.map((track) => [
-      track._id.toString(),
-      track,
-    ]);
-    const tracksMap = new Map(keyPairs);
-
-    trackIds.forEach((tid) => tracksMap.delete(tid));
-
-    const updatedTracks = Array.from(tracksMap.keys());
-
-    const updatedPlaylist = await Playlist.updateOne(
-      { _id: id },
-      { $set: { tracks: updatedTracks } },
+    targetPlaylist.tracks = targetPlaylist.tracks.filter(
+      (entry) => !trackIds.includes(entry.track.toString()),
     );
+
+    await targetPlaylist.save();
 
     res.json({
       message: `${trackIds.length} track(s) removed successfully`,
-      updatedPlaylist,
     });
   } catch (error) {
     console.error("Failed to remove tracks from playlist: ", error.message);
@@ -306,24 +330,17 @@ async function removeTrackFromPlaylist(req, res, next) {
     const targetPlaylist = await Playlist.findOne({
       _id: id,
       userId: userId,
-    }).populate("tracks");
+    })
     if (!targetPlaylist) {
       return next(new AppError("Playlist not found", 404));
     }
-    const keyPairs = targetPlaylist.tracks.map((track) => [
-      track._id.toString(),
-      track,
-    ]);
-    const tracksMap = new Map(keyPairs);
-    tracksMap.delete(trackId);
-    const updatedTracks = Array.from(tracksMap.keys());
-    const updatedPlaylist = await Playlist.updateOne(
-      { _id: id },
-      {
-        $set: { tracks: updatedTracks },
-      },
+
+    targetPlaylist.tracks = targetPlaylist.tracks.filter(
+      (entry) => entry.track.toString() !== trackId,
     );
-    res.json({ message: "Track removed successfully", updatedPlaylist });
+    await targetPlaylist.save();
+
+    res.json({ message: "Track removed successfully" });
   } catch (error) {
     console.error("Failed to remove track from playlist: ", error.message);
     next(new AppError("Failed to remove track from playlist", 500));
@@ -376,11 +393,16 @@ async function searchPlaylists(req, res, next) {
       userId,
       title: { $regex: q.trim(), $options: "i" },
     })
-      .populate("tracks")
+      .populate("tracks.track")
       .sort({ createdAt: -1 })
       .limit(20);
 
-    return res.status(200).json(playlists);
+    const result = playlists.map((p) => ({
+      ...p.toObject(),
+      tracks: transformTracks(p.tracks),
+    }));
+
+    return res.status(200).json(result);
   } catch (error) {
     console.error(
       `Failed to search playlists, userId: ${userId}, error: ${error.message}`,
