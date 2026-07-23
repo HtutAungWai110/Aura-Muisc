@@ -34,11 +34,11 @@ const Login = () => {
         {/* Branding Header */}
         <div className="text-center mb-12 animate-in fade-in duration-700">
           <div
-            className="inline-flex items-center justify-center w-32 h-32 mb-6 bg-white dark:bg-white/10 rounded-3xl transition-transform"
+            className="inline-flex items-center justify-center w-32 h-32 mb-6 bg-white/20 text-white rounded-3xl transition-transform"
             style={{ transform: `translateY(${floatY}px)` }}
           >
             <span
-              className="material-symbols-outlined text-black dark:text-white"
+              className="material-symbols-outlined"
               style={{ fontSize: "80px" }}
             >
               graphic_eq
@@ -53,12 +53,12 @@ const Login = () => {
         </div>
 
         {/* Login Card */}
-        <div className="bg-white dark:bg-white/10  p-8 rounded-lg shadow-2xl animate-in slide-in-from-bottom-8 duration-700">
+        <div className="bg-white/20 text-white p-8 rounded-lg shadow-2xl animate-in slide-in-from-bottom-8 duration-700">
           <div className="mb-10 text-center">
-            <h2 className="font-headline-lg text-headline-lg text-black dark:text-white mb-2">
+            <h2 className="font-headline-lg text-headline-lg  mb-2">
               Welcome back to Aura
             </h2>
-            <p className="font-body-sm text-black/50 dark:text-white/50">
+            <p className="font-body-sm text-white/60">
               Your sonic sanctuary awaits.
             </p>
           </div>
