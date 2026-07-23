@@ -64,7 +64,7 @@ export default function CreatePlaylistBtn() {
     return (
       <Button
         onClick={() => setCreating(!isCreating)}
-        className="flex gap-3 items-center bg-black dark:bg-white/20 w-full rounded-full p-5"
+        className="flex gap-3 items-center w-full rounded-full p-5"
       >
         <PlusCircle />
         Create Playlist
