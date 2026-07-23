@@ -3,7 +3,6 @@ import type { Area } from "react-easy-crop";
 import { getCroppedImg } from "@/lib/cropImage";
 import { base64ToFile } from "@/lib/convertImage";
 import apiClient from "@/lib/apiClient";
-import { usePlaylistStore } from "@/states/PlaylistState";
 import { Button } from "./ui/button";
 import { Check, X } from "lucide-react";
 import { Spinner } from "./ui/spinner";
@@ -30,7 +29,6 @@ export default function CoverPhotoDisplay({
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const [croppedImage, setCroppedImage] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const { updatePlaylist } = usePlaylistStore();
 
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -74,7 +72,6 @@ export default function CoverPhotoDisplay({
         queryClient.invalidateQueries({
           queryKey: [`Playlist ${playlistId}`],
         });
-        updatePlaylist(playlistId, data.updatedPlaylist);
         setSuccessMessage(data.message);
         setSelectedImage(null);
       }

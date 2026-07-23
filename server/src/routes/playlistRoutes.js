@@ -7,6 +7,7 @@ import {
   getCoverUploadUrl,
   updateCoverPhoto,
   removeTrackFromPlaylist,
+  removeTracksFromPlaylist,
   deletePlaylist,
   updatePlaylist,
   searchPlaylists,
@@ -18,6 +19,7 @@ import {
   playlistIdSchema,
   trackIdSchema,
   playlistAndTrackIdSchema,
+  batchTrackIdsSchema,
 } from "../validators/paramValidators.js";
 import express from "express";
 
@@ -62,6 +64,14 @@ router.post(
   authMiddleware,
   paramValidationMiddleware(playlistIdSchema),
   updatePlaylist,
+);
+
+router.delete(
+  "/remove-batch/:id",
+  authMiddleware,
+  paramValidationMiddleware(playlistIdSchema),
+  validationMiddleware(batchTrackIdsSchema),
+  removeTracksFromPlaylist,
 );
 
 router.delete(

@@ -54,56 +54,77 @@ export function putWithProgress(
   });
 }
 
-export async function uploadSingleTrack(
-  track: TrackPreview,
+async function uploadWithConcurrency<T>(
+  tasks: (() => Promise<T>)[],
+  limit: number,
+): Promise<T[]> {
+  const results: T[] = [];
+  let index = 0;
+
+  async function worker() {
+    while (index < tasks.length) {
+      const i = index++;
+      results[i] = await tasks[i]();
+    }
+  }
+
+  await Promise.all(Array.from({ length: Math.min(limit, tasks.length) }, () => worker()));
+  return results;
+}
+
+export async function uploadBatchTracks(
+  tracks: TrackPreview[],
   onProgress: (trackId: string, pct: number) => void,
 ) {
-  const audioFile = track.rawFile;
-  const duration = await getAudioDuration(audioFile);
+  const durations = await Promise.all(tracks.map((t) => getAudioDuration(t.rawFile)));
 
-  const requestBody: Record<string, string> = {
-    audioFilename: audioFile.name,
-    audioFileType: audioFile.type,
-  };
-
-  let thumbnailBlob: Blob | null = null;
-  if (track.thumbnailUrl) {
-    thumbnailBlob = dataUriToBlob(track.thumbnailUrl);
-    requestBody.imageFilename = `thumb-${track.name}.jpg`;
-    requestBody.imageFileType = "image/jpeg";
-  }
+  const files = tracks.map((track, i) => {
+    const body: Record<string, string> = {
+      audioFilename: track.rawFile.name,
+    };
+    if (track.thumbnailUrl) {
+      body.imageFilename = `thumb-${track.name}.jpg`;
+    }
+    return body;
+  });
 
   const { data: urlData } = await apiClient.post(
     "/api/track/get-upload-urls",
-    requestBody,
+    { files },
   );
 
-  const audioContentType = audioFile.type || "audio/mpeg";
-  await putWithProgress(
-    urlData.audio.uploadUrl,
-    audioFile,
-    audioContentType,
-    (pct) => onProgress(track.id, pct),
-  );
+  const uploadTasks = tracks.map((track, i) => async () => {
+    const { audio, image } = urlData.urls[i];
+    const audioFile = track.rawFile;
+    const audioContentType = audioFile.type || "audio/mpeg";
 
-  if (thumbnailBlob && urlData.image) {
     await putWithProgress(
-      urlData.image.uploadUrl,
-      thumbnailBlob,
-      "image/jpeg",
+      audio.uploadUrl,
+      audioFile,
+      audioContentType,
+      (pct) => onProgress(track.id, pct),
     );
-  }
 
-  const { data: savedTrack } = await apiClient.post(
-    "/api/track/save-metadata",
-    {
+    if (track.thumbnailUrl && image) {
+      const thumbnailBlob = dataUriToBlob(track.thumbnailUrl);
+      await putWithProgress(image.uploadUrl, thumbnailBlob, "image/jpeg");
+    }
+
+    return {
       title: track.title,
       artist: track.artist,
-      audioStoragePath: urlData.audio.storagePath,
-      imageStoragePath: urlData.image?.storagePath ?? null,
-      duration,
-    },
+      audioStoragePath: audio.storagePath,
+      imageStoragePath: image?.storagePath ?? null,
+      duration: durations[i],
+    };
+  });
+
+  const metadataList = await uploadWithConcurrency(uploadTasks, 3);
+
+  const { data } = await apiClient.post(
+    "/api/track/save-metadata",
+    { tracks: metadataList },
   );
 
-  return savedTrack;
+  return data.tracks;
 }

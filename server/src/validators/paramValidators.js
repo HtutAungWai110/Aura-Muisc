@@ -19,3 +19,12 @@ export const playlistAndTrackIdSchema = z.object({
 export const idSchema = z.object({
   id: objectId,
 });
+
+// Body validation schemas for batch operations
+export const batchIdsSchema = z.object({
+  ids: z.array(objectId).min(1, "At least one ID is required"),
+});
+
+export const batchTrackIdsSchema = z.object({
+  trackIds: z.array(objectId).min(1, "At least one track ID is required"),
+});

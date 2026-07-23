@@ -286,6 +286,37 @@ async function removeTrackFromPlaylist(req, res, next) {
   }
 }
 
+async function removeTracksFromPlaylist(req, res, next) {
+  const { id } = req.params;
+  const userId = req.userId;
+  const { trackIds } = req.body;
+
+  try {
+    if (!Array.isArray(trackIds) || trackIds.length === 0) {
+      return next(new AppError("trackIds array is required", 400));
+    }
+
+    const playlist = await Playlist.findOne({ _id: id, userId });
+    if (!playlist) {
+      return next(new AppError("Playlist not found", 404));
+    }
+
+    const updatedPlaylist = await Playlist.findOneAndUpdate(
+      { _id: id, userId },
+      { $pullAll: { tracks: trackIds } },
+      { new: true, runValidators: true },
+    ).populate("tracks");
+
+    return res.status(200).json({
+      message: `${trackIds.length} track(s) removed from playlist.`,
+      updatedPlaylist,
+    });
+  } catch (error) {
+    console.error("Failed to batch remove tracks from playlist:", error.message);
+    return next(new AppError("Failed to remove tracks from playlist", 500));
+  }
+}
+
 async function deletePlaylist(req, res, next) {
   const { id } = req.params;
   const userId = req.userId;
@@ -353,6 +384,7 @@ export {
   getCoverUploadUrl,
   updateCoverPhoto,
   removeTrackFromPlaylist,
+  removeTracksFromPlaylist,
   deletePlaylist,
   updatePlaylist,
   searchPlaylists,

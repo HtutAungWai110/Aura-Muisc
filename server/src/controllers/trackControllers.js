@@ -5,6 +5,15 @@ import { deleteStorageFile } from "../lib/storage.js";
 
 const BUCKET = "music-assets";
 
+async function createSignedUrlForFile(userId, bucket, filename) {
+  const path = `user-${userId}/${Date.now()}-${filename}`;
+  const { data, error } = await supabase.storage
+    .from(bucket)
+    .createSignedUploadUrl(path, { upsert: true });
+  if (error) throw error;
+  return { uploadUrl: data.signedUrl, storagePath: path };
+}
+
 async function getUploadUrls(req, res, next) {
   try {
     const userId = req.userId;
@@ -12,52 +21,32 @@ async function getUploadUrls(req, res, next) {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const { audioFilename, imageFilename } = req.body;
+    const { files } = req.body;
 
-    if (!audioFilename) {
+    if (!Array.isArray(files) || files.length === 0) {
       return res
         .status(400)
-        .json({ message: "Audio filename is required" });
+        .json({ message: "files array is required" });
     }
 
-    const audioPath = `user-${userId}/${Date.now()}-${audioFilename}`;
+    const urls = await Promise.all(
+      files.map(async ({ audioFilename, imageFilename }) => {
+        if (!audioFilename) {
+          throw new Error("Audio filename is required for each file");
+        }
 
-    const { data: audioData, error: audioError } = await supabase.storage
-      .from(BUCKET)
-      .createSignedUploadUrl(audioPath, { upsert: true });
+        const audio = await createSignedUrlForFile(userId, BUCKET, audioFilename);
 
-    if (audioError) {
-      console.error("Error creating audio signed URL:", audioError);
-      throw audioError;
-    }
+        let image = null;
+        if (imageFilename) {
+          image = await createSignedUrlForFile(userId, "thumbnail-assets", imageFilename);
+        }
 
-    const response = {
-      audio: {
-        uploadUrl: audioData.signedUrl,
-        storagePath: audioPath,
-      },
-      image: null,
-    };
+        return { audio, image };
+      }),
+    );
 
-    if (imageFilename) {
-      const imagePath = `user-${userId}/${Date.now()}-${imageFilename}`;
-
-      const { data: imageData, error: imageError } = await supabase.storage
-        .from("thumbnail-assets")
-        .createSignedUploadUrl(imagePath, { upsert: true });
-
-      if (imageError) {
-        console.error("Error creating image signed URL:", imageError);
-        throw imageError;
-      }
-
-      response.image = {
-        uploadUrl: imageData.signedUrl,
-        storagePath: imagePath,
-      };
-    }
-
-    return res.status(200).json(response);
+    return res.status(200).json({ urls });
   } catch (error) {
     console.error("Error generating upload URLs:", error);
     next(
@@ -73,34 +62,38 @@ async function saveMetadata(req, res, next) {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const { title, artist, audioStoragePath, imageStoragePath, duration } =
-      req.body;
+    const { tracks } = req.body;
 
-    if (!audioStoragePath) {
+    if (!Array.isArray(tracks) || tracks.length === 0) {
       return res
         .status(400)
-        .json({ message: "Audio storage path is required" });
+        .json({ message: "tracks array is required" });
     }
 
     const supabaseUrl = process.env.SUPABASE_URL?.replace(/\/+$/, "");
-    const fileUrl = `${supabaseUrl}/storage/v1/object/public/music-assets/${audioStoragePath}`;
 
-    let thumbnailUrl = null;
-    if (imageStoragePath) {
-      thumbnailUrl = `${supabaseUrl}/storage/v1/object/public/thumbnail-assets/${imageStoragePath}`;
-    }
+    const docs = tracks.map(({ title, artist, audioStoragePath, imageStoragePath, duration }) => {
+      if (!audioStoragePath) {
+        throw new Error("Audio storage path is required for each track");
+      }
 
-    const newTrack = new Track({
-      title: title || "Unknown Title",
-      artist: artist || "Unknown Artist",
-      fileUrl,
-      thumbnailUrl,
-      userId,
-      duration: duration || 0,
+      const fileUrl = `${supabaseUrl}/storage/v1/object/public/music-assets/${audioStoragePath}`;
+      const thumbnailUrl = imageStoragePath
+        ? `${supabaseUrl}/storage/v1/object/public/thumbnail-assets/${imageStoragePath}`
+        : null;
+
+      return {
+        title: title || "Unknown Title",
+        artist: artist || "Unknown Artist",
+        fileUrl,
+        thumbnailUrl,
+        userId,
+        duration: duration || 0,
+      };
     });
 
-    const savedTrack = await newTrack.save();
-    return res.status(201).json(savedTrack);
+    const savedTracks = await Track.insertMany(docs);
+    return res.status(201).json({ tracks: savedTracks });
   } catch (error) {
     console.error("Error saving metadata:", error);
     next(
@@ -158,6 +151,43 @@ async function deleteTrack(req, res, next) {
   }
 }
 
+async function deleteTracks(req, res, next) {
+  const userId = req.userId;
+  const { ids } = req.body;
+
+  try {
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return next(new AppError("ids array is required", 400));
+    }
+
+    const tracks = await Track.find({ userId, _id: { $in: ids } });
+
+    if (tracks.length === 0) {
+      return next(new AppError("No matching tracks found", 404));
+    }
+
+    // Delete storage files for each track
+    const deletePromises = tracks.flatMap((track) => {
+      const ops = [];
+      if (track.fileUrl) ops.push(deleteStorageFile(track.fileUrl));
+      if (track.thumbnailUrl) ops.push(deleteStorageFile(track.thumbnailUrl));
+      return ops;
+    });
+    await Promise.allSettled(deletePromises);
+
+    await Track.deleteMany({ userId, _id: { $in: ids } });
+
+    return res.status(200).json({
+      status: "success",
+      message: `${tracks.length} track(s) deleted successfully.`,
+      deletedCount: tracks.length,
+    });
+  } catch (error) {
+    console.error("Failed to batch delete tracks:", error.message);
+    return next(new AppError("Failed to delete tracks", 500));
+  }
+}
+
 async function getTracksCount(req, res, next) {
   const userId = req.userId;
   try {
@@ -174,5 +204,6 @@ export {
   saveMetadata,
   getTracks,
   deleteTrack,
+  deleteTracks,
   getTracksCount,
 };

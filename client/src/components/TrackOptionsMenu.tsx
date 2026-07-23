@@ -8,6 +8,7 @@ import {
   ListPlus,
   ChevronRight,
   Trash2,
+  CheckCircle,
 } from "lucide-react";
 import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { Button } from "./ui/button";
@@ -18,11 +19,13 @@ import { useTracksCountStore } from "@/states/TrackCountState";
 interface TrackOptionsMenuProps {
   track: Track;
   playlistId?: string | null;
+  onEnterSelecting?: () => void;
 }
 
 export default function TrackOptionsMenu({
   track,
   playlistId = null,
+  onEnterSelecting,
 }: TrackOptionsMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubMenuOpen, setIsSubMenuOpen] = useState(false);
@@ -116,9 +119,15 @@ export default function TrackOptionsMenu({
           }`}
           onClick={(e) => e.stopPropagation()}
         >
-          <button className="w-full px-4 py-2 text-left hover:bg-white/5 flex items-center gap-2 transition-colors">
-            <Pencil className="size-3.5" />
-            Edit
+          <button
+            className="w-full px-4 py-2 text-left hover:bg-white/5 flex items-center gap-2 transition-colors"
+            onClick={() => {
+              setIsOpen(false);
+              onEnterSelecting?.();
+            }}
+          >
+            <CheckCircle className="size-3.5" />
+            Select
           </button>
 
           <div

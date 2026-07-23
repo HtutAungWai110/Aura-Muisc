@@ -2,6 +2,7 @@ import { formatDuration, formatRelativeDate } from "@/lib/utils";
 import { Play } from "lucide-react";
 import { usePlaybackState } from "@/states/PlaybackState";
 import TrackOptionsMenu from "./TrackOptionsMenu";
+import { Checkbox } from "./ui/checkbox";
 import { memo } from "react";
 
 import type { Track } from "@/types/TrackType";
@@ -11,6 +12,10 @@ interface TrackTemplateProps {
   index: number;
   allTracks?: Track[];
   playlistId?: string | null;
+  isSelecting?: boolean;
+  isSelected?: boolean;
+  onToggleSelect?: (id: string) => void;
+  onEnterSelecting?: () => void;
 }
 
 const TrackTemplate = ({
@@ -18,6 +23,10 @@ const TrackTemplate = ({
   index,
   allTracks,
   playlistId = null,
+  isSelecting = false,
+  isSelected = false,
+  onToggleSelect,
+  onEnterSelecting,
 }: TrackTemplateProps) => {
   const { currentTrack, isPlaying, setCurrentTrack, setTracks, togglePlay } =
     usePlaybackState();
@@ -25,6 +34,11 @@ const TrackTemplate = ({
 
   const handlePlay = (e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest(".options-container")) {
+      return;
+    }
+
+    if (isSelecting) {
+      onToggleSelect?.(track._id);
       return;
     }
 
@@ -100,7 +114,19 @@ const TrackTemplate = ({
       </div>
 
       <div className="flex items-center justify-center options-container">
-        <TrackOptionsMenu track={track} playlistId={playlistId} />
+        {isSelecting ? (
+          <Checkbox
+            checked={isSelected}
+            onCheckedChange={() => onToggleSelect?.(track._id)}
+            className="size-5"
+          />
+        ) : (
+          <TrackOptionsMenu
+            track={track}
+            playlistId={playlistId}
+            onEnterSelecting={onEnterSelecting}
+          />
+        )}
       </div>
     </div>
   );
