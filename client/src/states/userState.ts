@@ -17,6 +17,7 @@ interface UserState {
   isLoading: boolean;
   error: string | null;
   fetchUserData: () => Promise<void>;
+  clearUserData: () => void;
 }
 
 export const useUser = create<UserState>()(
@@ -33,6 +34,7 @@ export const useUser = create<UserState>()(
           set({ isLoading: false });
         }
       },
+      clearUserData: () => set({ userData: null, isLoading: false, error: null }),
     }),
 
 );

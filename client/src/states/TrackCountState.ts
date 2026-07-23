@@ -7,7 +7,7 @@ interface TracksCountStore {
   setTracksCount: (payload: number) => void;
 }
 
-export const useTracksCountStore = create<TracksCountStore>((set) => ({
+export const useTracksCountStore = create<TracksCountStore>((set, get) => ({
   tracksCount: null,
   getTracksCount: async () => {
     try {
@@ -20,6 +20,10 @@ export const useTracksCountStore = create<TracksCountStore>((set) => ({
     }
   },
   setTracksCount: (payload) => {
-    set({ tracksCount: payload });
+    const { tracksCount: currentTracksCount } = get()
+
+      set({ tracksCount: currentTracksCount !== null ? currentTracksCount + payload : null });
+
+
   },
 }));

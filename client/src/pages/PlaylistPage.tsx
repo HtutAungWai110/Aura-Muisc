@@ -59,7 +59,7 @@ export default function PlaylistPage() {
   if (isLoading && !playlistData) {
     return (
       <div className="md:ml-80 min-h-screen flex items-center justify-center">
-        <Spinner className="size-8 text-primary" />
+        <Spinner className="size-8 text-on-surface" />
       </div>
     );
   }
@@ -85,8 +85,8 @@ export default function PlaylistPage() {
   return (
     <div className="md:ml-80 min-h-screen flex flex-col items-center justify-start relative overflow-hidden pb-32">
       <div className="absolute top-0 left-0 w-full h-full -z-10 bg-surface">
-        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px]"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-secondary-container/20 rounded-full blur-[100px]"></div>
+        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-on-surface/3 rounded-full blur-[120px]"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-outline/3 rounded-full blur-[100px]"></div>
       </div>
 
       {isEditing && (
@@ -104,7 +104,7 @@ export default function PlaylistPage() {
             playlistId={playlistData._id}
           />
           <div className="flex flex-col gap-0 md:gap-2 pb-2">
-            <span className="font-label-caps text-label-caps text-primary uppercase tracking-[0.2em] mb-1">
+            <span className="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-[0.2em] mb-1">
               Playlist
             </span>
             <h1 className="font-headline-xl text-[1em] text-headline-xl text-on-surface leading-none mb-6 tracking-tight">
@@ -122,9 +122,9 @@ export default function PlaylistPage() {
             <div className="relative mt-4">
               <button
                 onClick={handleOpenMenu}
-                className="rounded-full p-1 text-neutral hover:bg-primary/10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-200 focus:ring-primary"
+                className="rounded-full p-1 text-on-surface-variant hover:bg-on-surface/10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-200 focus:ring-on-surface"
               >
-                <span className="material-symbols-outlined">more_vert</span>
+                <span className="material-symbols-outlined text-on-surface">more_vert</span>
               </button>
               <PlaylistOptionsBox
                 playlist={playlistData}
@@ -142,7 +142,7 @@ export default function PlaylistPage() {
             <TracksWrapper tracks={playlistData.tracks} playlistId={id} />
           </div>
         ) : (
-          <div className="bg-primary/10 w-full h-50 rounded-2xl flex justify-center items-center opacity-60">
+          <div className="bg-on-surface/5 w-full h-50 rounded-2xl flex justify-center items-center opacity-60">
             <h1>No tracks in the playlist yet!</h1>
           </div>
         )}

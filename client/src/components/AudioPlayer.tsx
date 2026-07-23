@@ -12,7 +12,7 @@ import {
   ListMusic,
   ChevronDown,
 } from "lucide-react";
-import { Slider } from "./ui/slider"; // Assuming there is a slider in ui/
+import { Slider } from "./ui/slider";
 import { Button } from "./ui/button";
 import { formatDuration } from "@/lib/utils";
 import { useCallback } from "react";
@@ -168,7 +168,7 @@ export default function AudioPlayer() {
       setVolume(value[0]);
       if (value[0] > 0) setIsMuted(false);
     },
-    [setVolume, setIsMuted],
+    [setVolume],
   );
 
   const toggleLoop = useCallback(() => {
@@ -204,8 +204,12 @@ export default function AudioPlayer() {
 
       {/* Pill (mobile) / Full bar (desktop) */}
       <div
-        className={`mx-3 md:mx-0 rounded-full md:rounded-none bg-white/10 md:bg-surface-container/80 backdrop-blur-2xl md:backdrop-blur-xl border border-white/10 md:border-t md:border-white/5 shadow-2xl md:shadow-none h-12 md:h-24 px-3 md:px-8 flex items-center justify-between cursor-pointer md:cursor-default ${isFullScreen ? "md:flex hidden" : ""}`}
-        onClick={() => setIsFullScreen(true)}
+        className={`mx-3 md:mx-0 rounded-full md:rounded-none bg-white/10 md:bg-surface-container/80 backdrop-blur-2xl md:backdrop-blur-xl border border-white/10 md:border-t md:border-white/5 shadow-2xl md:shadow-none h-12 md:h-24 px-5 md:px-8  flex items-center justify-between cursor-pointer md:cursor-default ${isFullScreen ? "md:flex hidden" : ""}`}
+          onClick={() => {
+            if (window.innerWidth < 768) {
+              setIsFullScreen(true);
+            }
+          }}
       >
         {/* Track Info */}
         <div className="flex items-center gap-2 md:gap-4 w-1/3 min-w-0">
@@ -238,7 +242,7 @@ export default function AudioPlayer() {
               size="icon"
               onClick={(e) => { e.stopPropagation(); toggleShuffle(); }}
               className={`transition-colors hidden md:flex ${
-                mode === Mode.shuffle ? "text-primary" : "hover:text-primary"
+                mode === Mode.shuffle ? "text-black dark:text-white" : "text-black/40 dark:text-white/40"
               }`}
             >
               <Shuffle className="size-5" />
@@ -247,36 +251,36 @@ export default function AudioPlayer() {
               variant="ghost"
               size="icon"
               onClick={(e) => { e.stopPropagation(); prevTrack(); }}
-              className="hover:text-primary transition-colors"
+              className="text-black dark:text-white hover:text-black dark:hover:text-white transition-colors"
             >
-              <SkipBack className="size-3 md:size-6 fill-current" />
+              <SkipBack className="size-3 md:size-6 fill-black dark:fill-white" />
             </Button>
             <Button
               variant="ghost"
               size="icon"
-              className="size-7 md:size-10 rounded-full bg-white hover:scale-105 transition-transform"
+              className="rounded-full bg-on-surface w-10 h-10 hover:bg-on-surface/90 text-surface font-bold text-lg shadow-lg hover:shadow-on-surface/20 transition-all"
               onClick={(e) => { e.stopPropagation(); togglePlay(); }}
             >
               {isPlaying ? (
-                <Pause className="size-4 md:size-6 text-black/80 fill-black/80" />
+                <Pause className="size-4 md:size-6 text-surface fill-surface" />
               ) : (
-                <Play className="size-4 md:size-6 text-black/80 fill-black/80" />
+                <Play className="size-4 md:size-6 text-surface fill-surface" />
               )}
             </Button>
             <Button
               variant="ghost"
               size="icon"
               onClick={(e) => { e.stopPropagation(); nextTrack(); }}
-              className="hover:text-primary transition-colors"
+              className="text-black dark:text-white hover:text-black dark:hover:text-white transition-colors"
             >
-              <SkipForward className="size-3 md:size-6 fill-current" />
+              <SkipForward className="size-3 md:size-6 fill-black dark:fill-white" />
             </Button>
             <Button
               variant="ghost"
               size="icon"
               onClick={(e) => { e.stopPropagation(); toggleLoop(); }}
               className={`transition-colors hidden md:flex ${
-                isLooping ? "text-primary" : "hover:text-primary"
+                isLooping ? "text-black dark:text-white" : "text-black/40 dark:text-white/40"
               }`}
             >
               <Repeat className="size-5" />
@@ -311,8 +315,8 @@ export default function AudioPlayer() {
             }}
             className={`transition-colors ${
               isQueueOpen
-                ? "text-primary"
-                : "text-on-surface-variant hover:text-primary"
+                ? "text-black dark:text-white"
+                : "text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white"
             }`}
           >
             <ListMusic className="size-3.5 md:size-5" />
@@ -321,7 +325,7 @@ export default function AudioPlayer() {
             variant="ghost"
             size="icon"
             onClick={(e) => { e.stopPropagation(); setIsMuted(!isMuted); }}
-            className="text-on-surface-variant"
+            className="text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white"
           >
             {isMuted || volume === 0 ? (
               <VolumeX className="size-3.5 md:size-5" />
@@ -358,7 +362,7 @@ export default function AudioPlayer() {
             onDragEnd={(_, info) => {
               if (info.offset.y > 150) setIsFullScreen(false);
             }}
-            className="md:hidden fixed inset-0 z-[300] bg-gradient-to-b from-surface-container to-background flex flex-col justify-between px-6 py-4 overflow-y-auto"
+            className="md:hidden fixed inset-0 z-[300] bg-gradient-to-b from-surface-container to-background flex flex-col justify-between px-6 py-5 overflow-y-auto"
           >
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
@@ -369,7 +373,7 @@ export default function AudioPlayer() {
               variant="ghost"
               size="icon"
               onClick={() => setIsFullScreen(false)}
-              className="text-on-surface-variant hover:text-on-surface size-10"
+              className="text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white size-10"
             >
               <ChevronDown className="size-8" />
             </Button>
@@ -411,7 +415,7 @@ export default function AudioPlayer() {
                 max={duration || 100}
                 step={1}
                 onValueChange={handleProgressChange}
-                className="flex-1"
+                className="flex-1 "
               />
               <span className="text-[10px] text-on-surface-variant w-10 font-mono">
                 {formatDuration(duration)}
@@ -425,8 +429,8 @@ export default function AudioPlayer() {
                 size="icon"
                 onClick={toggleShuffle}
                 className={`transition-colors ${
-                  mode === Mode.shuffle ? "text-primary" : "hover:text-primary"
-                }`}
+                  mode === Mode.shuffle ? "text-black dark:text-white" : "text-black/40 dark:text-white/40"
+                } hover:text-black dark:hover:text-white`}
               >
                 <Shuffle className="size-5" />
               </Button>
@@ -434,37 +438,37 @@ export default function AudioPlayer() {
                 variant="ghost"
                 size="icon"
                 onClick={prevTrack}
-                className="hover:text-primary transition-colors"
+                className="text-black dark:text-white hover:text-black dark:hover:text-white transition-colors"
               >
-                <SkipBack className="size-6 fill-current" />
+                <SkipBack className="size-6 fill-black dark:fill-white" />
               </Button>
               <Button
                 variant="ghost"
                 size="icon"
-                className="size-14 rounded-full bg-white hover:scale-105 transition-transform"
+                className="size-14 rounded-full bg-on-surface hover:scale-105 transition-transform"
                 onClick={togglePlay}
               >
                 {isPlaying ? (
-                  <Pause className="size-7 text-black/80 fill-black/80" />
+                  <Pause className="size-7 text-surface fill-surface" />
                 ) : (
-                  <Play className="size-7 text-black/80 fill-black/80" />
+                  <Play className="size-7 text-surface fill-surface" />
                 )}
               </Button>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={nextTrack}
-                className="hover:text-primary transition-colors"
+                className="text-black dark:text-white hover:text-black dark:hover:text-white transition-colors"
               >
-                <SkipForward className="size-6 fill-current" />
+                <SkipForward className="size-6 fill-black dark:fill-white" />
               </Button>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={toggleLoop}
                 className={`transition-colors ${
-                  isLooping ? "text-primary" : "hover:text-primary"
-                }`}
+                  isLooping ? "text-black dark:text-white" : "text-black/40 dark:text-white/40"
+                } hover:text-black dark:hover:text-white`}
               >
                 <Repeat className="size-5" />
               </Button>
@@ -479,8 +483,8 @@ export default function AudioPlayer() {
               onClick={() => setIsQueueOpen(!isQueueOpen)}
               className={`transition-colors ${
                 isQueueOpen
-                  ? "text-primary"
-                  : "text-on-surface-variant hover:text-primary"
+                  ? "text-black dark:text-white"
+                  : "text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white"
               }`}
             >
               <ListMusic className="size-5" />
@@ -489,7 +493,7 @@ export default function AudioPlayer() {
               variant="ghost"
               size="icon"
               onClick={() => setIsMuted(!isMuted)}
-              className="text-on-surface-variant"
+              className="text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white"
             >
               {isMuted || volume === 0 ? (
                 <VolumeX className="size-5" />
@@ -502,7 +506,7 @@ export default function AudioPlayer() {
               max={1}
               step={0.01}
               onValueChange={handleVolumeChange}
-              className="w-40"
+              className="w-20"
             />
           </div>
           </motion.div>

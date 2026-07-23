@@ -6,6 +6,8 @@ import { Play, Shuffle } from "lucide-react";
 import { Mode } from "@/states/PlaybackState";
 import { usePlaybackState } from "@/states/PlaybackState";
 import { useEffect } from "react";
+import { useSortStore } from "@/states/SortState";
+import SortComboBox from "./SortComboBox";
 
 interface TracksWrapperProps {
   tracks: Track[];
@@ -22,6 +24,8 @@ export default function TracksWrapper({
     console.log(queue, queueIndex);
   }, [queue, queueIndex]);
 
+  const { sort } = useSortStore();
+
   const handlePlayAll = () => {
     if (tracks && tracks.length > 0) {
       setTracks(tracks);
@@ -33,29 +37,33 @@ export default function TracksWrapper({
     setMode(mode === Mode.shuffle ? Mode.all : Mode.shuffle);
   };
 
+
   if(!tracks || tracks.length === 0) return null;
 
   return (
-    <div className="w-full mt-8 mb-20">
+    <div className="w-full mt-8 mb-10 md:mb-20">
       {tracks && tracks.length > 0 && (
-        <div className="flex gap-2 my-8">
-          <Button
-            className="rounded-full bg-primary w-12 h-12 hover:bg-primary/90 text-on-primary-container font-bold text-lg shadow-lg hover:shadow-primary/20 transition-all"
-            variant="ghost"
-            onClick={handlePlayAll}
-          >
-            <Play className="fill-current" />
-          </Button>
+        <div className="flex gap-2 my-8 justify-between">
+          <div className="flex gap-2 items-center">
+            <Button
+              className="rounded-full bg-on-surface w-12 h-12 hover:bg-on-surface/90 text-surface font-bold text-lg shadow-lg hover:shadow-on-surface/20 transition-all"
+              variant="ghost"
+              onClick={handlePlayAll}
+            >
+              <Play className="fill-current" />
+            </Button>
 
-          <Button
-            className={`rounded-full w-12 h-12 font-bold text-lg hover:text-primary transition-all ${
-              mode === Mode.shuffle ? "text-primary" : ""
-            }`}
-            variant="ghost"
-            onClick={handleShuffle}
-          >
-            <Shuffle className="fill-current" />
-          </Button>
+            <Button
+              className={`rounded-full w-12 h-12 font-bold text-lg hover:text-on-surface transition-all ${
+                mode === Mode.shuffle ? "text-on-surface" : ""
+              }`}
+              variant="ghost"
+              onClick={handleShuffle}
+            >
+              <Shuffle className="fill-current" />
+            </Button>
+          </div>
+          <SortComboBox/>
         </div>
       )}
 
@@ -70,7 +78,7 @@ export default function TracksWrapper({
 
       {/* Tracks List */}
       <div className="flex flex-col mt-2">
-        {tracks.map((track, index) => (
+        {sort(tracks).map((track, index) => (
           <TrackTemplate
             key={track._id}
             track={track}

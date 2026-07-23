@@ -20,8 +20,8 @@ export default function PlaylistCard({ playlist }: PlaylistCardProps) {
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-primary/20 to-secondary-container/20 flex items-center justify-center">
-              <span className="material-symbols-outlined text-primary/40 text-6xl">
+            <div className="w-full h-full bg-surface-variant flex items-center justify-center">
+              <span className="material-symbols-outlined text-on-surface-variant/40 text-6xl">
                 library_music
               </span>
             </div>
@@ -29,14 +29,14 @@ export default function PlaylistCard({ playlist }: PlaylistCardProps) {
 
           {/* Play Button Overlay */}
           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-            <div className="size-12 rounded-full bg-primary flex items-center justify-center shadow-2xl transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-              <Play className="size-6 text-on-primary fill-current" />
+            <div className="size-12 rounded-full bg-on-surface flex items-center justify-center shadow-2xl transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+              <Play className="size-6 text-surface fill-current" />
             </div>
           </div>
         </div>
 
         <div className="flex flex-col min-w-0">
-          <h3 className="font-bold text-on-surface truncate group-hover:text-primary transition-colors">
+          <h3 className="font-bold text-on-surface truncate group-hover:text-on-surface transition-colors">
             {playlist.title}
           </h3>
           <p className="text-on-surface-variant text-sm font-label-caps opacity-70">

@@ -6,14 +6,10 @@ import { useTrackImportsState } from "@/states/TrackImportsState";
 import { useQuery } from "@tanstack/react-query";
 import PlaylistsWrapper from "@/components/PlaylistsWrappers";
 import { usePlaybackState } from "@/states/PlaybackState";
-import { useEffect, useState } from "react";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-
+import { useEffect } from "react";
 export default function Library() {
   const { previewTracks } = useTrackImportsState();
   const { mode } = usePlaybackState();
-  const [airplaneMode, setAirplaneMode] = useState(false)
   const { data: tracks, isLoading } = useQuery({
     queryKey: ["Tracks"],
     queryFn: async () => {
@@ -31,8 +27,8 @@ export default function Library() {
   return (
     <main className="md:ml-80 min-h-screen p-container-padding-mobile md:p-container-padding-desktop flex flex-col items-center justify-start relative overflow-hidden pb-32">
       <div className="absolute top-0 left-0 w-full h-full -z-10 bg-surface">
-        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px]"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-secondary-container/20 rounded-full blur-[100px]"></div>
+        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-on-surface/3 rounded-full blur-[120px]"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-outline/3 rounded-full blur-[100px]"></div>
       </div>
 
 
@@ -66,15 +62,7 @@ export default function Library() {
           )
         )}
       </section>
-      <div className="flex items-center space-x-2 p-4">
-            <Switch
-              id="airplane-mode"
-              checked={airplaneMode}
-              onCheckedChange={() => setAirplaneMode(!airplaneMode)}
-              className="bg-white"
-            />
-            <Label htmlFor="airplane-mode">Airplane Mode</Label>
-        </div>
+
     </main>
   );
 }

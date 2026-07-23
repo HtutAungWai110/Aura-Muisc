@@ -7,7 +7,7 @@ export default function ImportTrackBtn() {
 
 
   return (
-    <div className="relative md:w-80 w-100 md:h-10 h-15 flex justify-center items-center gap-2 rounded-2xl border border-primary bg-primary/10 hover:scale-105 duration-300">
+    <div className="relative md:w-80 w-100 md:h-10 h-15 flex justify-center items-center gap-2 rounded-2xl border border-on-surface/20 bg-on-surface/5 hover:scale-105 duration-300">
       <Input
         className="absolute w-full h-full opacity-0 cursor-pointer"
         type="file"

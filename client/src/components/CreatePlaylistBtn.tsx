@@ -40,23 +40,23 @@ export default function CreatePlaylistBtn() {
 
   if (isCreating) {
     return (
-      <div className="p-5 shadow-2xl border border-primary/50 rounded-2xl flex flex-col gap-5 mx-auto">
+      <div className="p-5 shadow-2xl border border-on-surface/20 rounded-2xl flex flex-col gap-5 mx-auto">
         <input
           type="text"
           value={playlistTitle}
           onChange={handlePlaylistInputChange}
-          className="w-full shadow-2xl p-2 bg-primary/10 rounded-xl"
+          className="w-full shadow-2xl p-2 bg-on-surface/5 rounded-xl"
           placeholder="Enter playlist title"
         />
         <div className="flex justify-end gap-2">
           <Button
             variant="ghost"
-            className="border border-primary"
+            className="border border-black/50 dark:border-white/50 text-black dark:text-white"
             onClick={handleClose}
           >
             Close
           </Button>
-          <Button onClick={() => createMutation.mutate()}>Create</Button>
+          <Button className="bg-black dark:bg-white text-white dark:text-black hover:bg-black/20 dark:hover:bg-white/20" onClick={() => createMutation.mutate()}>Create</Button>
         </div>
       </div>
     );
@@ -64,7 +64,7 @@ export default function CreatePlaylistBtn() {
     return (
       <Button
         onClick={() => setCreating(!isCreating)}
-        className="flex gap-3 items-center justify-center rounded-3xl p-5 w-full text-background/80"
+        className="flex gap-3 items-center w-full rounded-full p-5"
       >
         <PlusCircle />
         Create Playlist

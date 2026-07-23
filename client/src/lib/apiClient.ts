@@ -14,6 +14,11 @@ export function getAccessToken(): string | null {
   return getCookie("accessToken");
 }
 
+export function clearTokens() {
+  setCookie("accessToken", "", 0);
+  setCookie("refreshToken", "", 0);
+}
+
 export function setTokensFromHash() {
   const hash = window.location.hash.substring(1);
   const params = new URLSearchParams(hash);

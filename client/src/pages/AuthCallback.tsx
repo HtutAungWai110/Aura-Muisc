@@ -8,7 +8,6 @@ const AuthCallback = () => {
   const { fetchUserData } = useUser();
 
   useEffect(() => {
-    // Extract tokens from URL hash and store in cookies
     setTokensFromHash();
 
     if (getAccessToken()) {
@@ -23,9 +22,9 @@ const AuthCallback = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-mesh text-on-surface font-body-lg">
       <div className="text-center">
-        <div className="inline-flex items-center justify-center w-16 h-16 mb-4 glass-panel rounded-2xl neon-glow animate-pulse">
+        <div className="inline-flex items-center justify-center w-16 h-16 mb-4 glass-panel rounded-2xl animate-pulse">
           <span
-            className="material-symbols-outlined text-primary"
+            className="material-symbols-outlined text-on-surface"
             style={{ fontSize: "36px" }}
           >
             music_note

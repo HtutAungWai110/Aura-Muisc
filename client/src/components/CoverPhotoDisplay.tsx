@@ -97,7 +97,7 @@ export default function CoverPhotoDisplay({
   return (
     <div>
       {selectedImage && (
-        <div className="fixed inset-0 z-[100] backdrop-blur-xl flex flex-col">
+        <div className="fixed left-[50%] top-[50%] w-[100vw] h-[100vh] -translate-x-[50%] -translate-y-[50%] inset-0 z-[999] backdrop-blur-xl flex flex-col ">
           <div className="flex items-center justify-between p-6 border-b border-white/10">
             <div className="flex items-center gap-4">
               <Button
@@ -108,10 +108,9 @@ export default function CoverPhotoDisplay({
               >
                 <X className="size-6" />
               </Button>
-              <h2 className="text-xl font-bold">Crop Cover Photo</h2>
             </div>
             <Button
-              className="rounded-full px-6 gap-2 bg-primary text-on-primary-container font-bold"
+              className="rounded-full px-6 gap-2 bg-on-surface text-surface font-bold text-xs md:text-sm"
               onClick={handleSaveCrop}
               disabled={isUploading}
             >
@@ -119,7 +118,7 @@ export default function CoverPhotoDisplay({
                 <Spinner />
               ) : (
                 <>
-                  <Check className="size-5" />
+                  <Check className="size-3 md:size-5" />
                   Save Photo
                 </>
               )}
@@ -142,7 +141,7 @@ export default function CoverPhotoDisplay({
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center from-surface-container-high to-surface-container-low">
+          <div className="w-full h-full flex items-center justify-center bg-surface-variant">
             <Music className="size-24 text-on-surface-variant opacity-10" />
           </div>
         )}

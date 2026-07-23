@@ -71,7 +71,7 @@ export default function PlaylistOptionsBox({
       className="absolute right-0 mt-2 w-56 origin-top-right rounded-md shadow-2xl py-1 z-50 border border-white/10 bg-surface-container-highest"
     >
       <button
-        className="px-4 py-2 text-sm text-on-surface-variant cursor-pointer hover:bg-primary/10 flex items-center gap-1 w-full"
+        className="px-4 py-2 text-sm text-on-surface cursor-pointer hover:bg-on-surface/10 flex items-center gap-1 w-full"
         onClick={() => {
           onClose();
           onEdit();
@@ -82,7 +82,7 @@ export default function PlaylistOptionsBox({
       </button>
       <button
         disabled={deleteMutation.isPending}
-        className="px-4 py-2 text-sm text-on-surface-variant cursor-pointer hover:bg-primary/10 flex items-center gap-1 w-full"
+        className="px-4 py-2 text-sm text-red-800 cursor-pointer hover:bg-on-surface/10 flex items-center gap-1 w-full"
         onClick={() => {
           deleteMutation.mutate();
         }}

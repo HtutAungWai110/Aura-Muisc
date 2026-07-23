@@ -9,6 +9,7 @@ import {
   removeTrackFromPlaylist,
   deletePlaylist,
   updatePlaylist,
+  searchPlaylists,
 } from "../controllers/playlistControllers.js";
 import validationMiddleware from "../middleware/ValidationMiddleware.js";
 import paramValidationMiddleware from "../middleware/paramValidationMiddleware.js";
@@ -30,6 +31,8 @@ router.post(
 );
 
 router.get("/all", authMiddleware, getAllPlaylists);
+
+router.get("/search", authMiddleware, searchPlaylists);
 
 router.get(
   "/:id",
