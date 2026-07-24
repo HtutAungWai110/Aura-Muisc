@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { Playlist } from "@/types/PlaylistType";
+import type { Playlist, PlaylistItem } from "@/types/PlaylistType";
 import apiClient from "@/lib/apiClient";
 import type { Track } from "@/types/TrackType";
 
@@ -86,11 +86,15 @@ export const usePlaylistStore = create<PlaylistStore>((set, get) => ({
   },
   addTrack: (id, payload) => {
     const { playlists } = get();
+    const newItem: PlaylistItem = {
+      track: payload,
+      addedAt: new Date().toISOString(),
+    };
     const updatedPlaylists = playlists.map((p) => {
       if (p._id === id) {
         return {
           ...p,
-          tracks: [...p.tracks, payload],
+          tracks: [newItem,...p.tracks ],
         };
       }
       return p;
@@ -103,7 +107,9 @@ export const usePlaylistStore = create<PlaylistStore>((set, get) => ({
       if (p._id === id) {
         return {
           ...p,
-          tracks: p.tracks.filter((t: Track) => t._id != trackId),
+          tracks: p.tracks.filter(
+            (item: PlaylistItem) => item.track._id !== trackId,
+          ),
         };
       }
       return p;
@@ -114,15 +120,19 @@ export const usePlaylistStore = create<PlaylistStore>((set, get) => ({
   trackExist: (id, trackId) => {
     const { playlists } = get();
     const target = playlists.find((item: Playlist) => item._id === id);
-    const exist = target.tracks.some((track: Track) => track._id === trackId);
-    return exist;
+    if (!target) return false;
+    return target.tracks.some(
+      (item: PlaylistItem) => item.track._id === trackId,
+    );
   },
   removeTrackAfterDelete: (trackId) => {
     const { playlists } = get();
     const updatedPlaylists = playlists.map((p: Playlist) => {
       return {
         ...p,
-        tracks: p.tracks.filter((t: Track) => t._id !== trackId),
+        tracks: p.tracks.filter(
+          (item: PlaylistItem) => item.track._id !== trackId,
+        ),
       };
     });
     set({ playlists: updatedPlaylists });

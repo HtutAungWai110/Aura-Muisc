@@ -1,4 +1,5 @@
 import Track from "../models/track.js";
+import Playlist from "../models/playlist.js";
 import AppError from "../lib/appError.js";
 import { supabase } from "../config/supabase.js";
 import { deleteStorageFile } from "../lib/storage.js";
@@ -112,7 +113,7 @@ async function getTracks(req, res, next) {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const tracks = await Track.find({ userId: userId }).sort({ addedAt: -1 });
+    const tracks = await Track.find({ userId: userId }).sort({ createdAt: -1 });
     return res.json(tracks);
   } catch (error) {
     console.error("Error fetching tracks:", error);
@@ -139,7 +140,7 @@ async function deleteTrack(req, res, next) {
       await deleteStorageFile(target.thumbnailUrl);
     }
 
-    await Track.deleteOne({ _id: id });
+    await Track.findOneAndDelete({ _id: id, userId });
 
     return res.status(200).json({
       status: "success",
@@ -166,7 +167,6 @@ async function deleteTracks(req, res, next) {
       return next(new AppError("No matching tracks found", 404));
     }
 
-    // Delete storage files for each track
     const deletePromises = tracks.flatMap((track) => {
       const ops = [];
       if (track.fileUrl) ops.push(deleteStorageFile(track.fileUrl));
@@ -176,6 +176,14 @@ async function deleteTracks(req, res, next) {
     await Promise.allSettled(deletePromises);
 
     await Track.deleteMany({ userId, _id: { $in: ids } });
+
+    await Playlist.updateMany(
+      { "tracks.track": { $in: ids } },
+      {
+        $pull: { tracks: { track: { $in: ids } } },
+        $inc: { trackCount: -ids.length },
+      },
+    );
 
     return res.status(200).json({
       status: "success",

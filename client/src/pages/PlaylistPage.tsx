@@ -78,7 +78,7 @@ export default function PlaylistPage() {
   }
 
   const totalDuration = playlistData.tracks.reduce(
-    (acc, track) => acc + track.duration,
+    (acc, item) => acc + item.track.duration,
     0,
   );
 
@@ -139,7 +139,7 @@ export default function PlaylistPage() {
         {/* Tracks List */}
         {playlistData.tracks.length > 0 ? (
           <div>
-            <TracksWrapper tracks={playlistData.tracks} playlistId={id} />
+            <TracksWrapper tracks={playlistData.tracks.map((item) => ({ ...item.track, addedAt: item.addedAt }))} playlistId={id} />
           </div>
         ) : (
           <div className="bg-on-surface/5 w-full h-50 rounded-2xl flex justify-center items-center opacity-60">

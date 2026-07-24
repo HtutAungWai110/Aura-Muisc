@@ -6,6 +6,16 @@ import { deleteStorageFile } from "../lib/storage.js";
 
 const BUCKET = "music-assets";
 
+function sortTracks(playlists) {
+  const arr = Array.isArray(playlists) ? playlists : [playlists];
+  for (const pl of arr) {
+    if (pl.tracks) {
+      pl.tracks.sort((a, b) => new Date(b.addedAt) - new Date(a.addedAt));
+    }
+  }
+  return playlists;
+}
+
 async function createPlaylist(req, res, next) {
   try {
     const { playlistTitle } = req.body;
@@ -17,8 +27,8 @@ async function createPlaylist(req, res, next) {
     });
 
     if (playlistExists) {
-      playlistExists.existCount = playlistExists.existCount + 1;
-      title = (title + playlistExists.existCount).toString();
+      playlistExists.trackCount = playlistExists.trackCount + 1;
+      title = (title + playlistExists.trackCount).toString();
       playlistExists.save();
     }
 
@@ -46,9 +56,11 @@ async function getAllPlaylists(req, res, next) {
     const totalPage = Math.ceil(totalPlaylists / pageSize);
 
     const playlists = await Playlist.find({ userId })
-      .populate("tracks")
+      .populate("tracks.track")
       .sort({ createdAt: -1 })
       .limit(pageSize * pageNumber);
+
+    sortTracks(playlists);
 
     return res.status(200).json({ totalPage, playlists });
   } catch (error) {
@@ -70,11 +82,13 @@ async function getPlaylist(req, res, next) {
     const playlist = await Playlist.findOne({
       _id: id,
       userId: userId,
-    }).populate("tracks");
+    }).populate("tracks.track");
 
     if (!playlist) {
       next(new AppError("Playlist not found.", 404));
     }
+
+    sortTracks(playlist);
 
     return res.status(200).json(playlist);
   } catch (error) {
@@ -102,13 +116,14 @@ async function addTrackToPlaylist(req, res, next) {
           userId: userId,
         },
         {
-          $addToSet: { tracks: trackId },
+          $push: { tracks: { track: trackId, addedAt: new Date() } },
+          $inc: { trackCount: 1 },
         },
         {
           new: true,
           runValidators: true,
         },
-      ).populate("tracks");
+      ).populate("tracks.track");
       if (!updatedPlaylist) {
         return next(
           new AppError(
@@ -117,6 +132,8 @@ async function addTrackToPlaylist(req, res, next) {
           ),
         );
       }
+
+      sortTracks(updatedPlaylist);
 
       return res.json(updatedPlaylist);
     } catch (error) {
@@ -259,26 +276,21 @@ async function removeTrackFromPlaylist(req, res, next) {
   const { id, trackId } = req.params;
   const userId = req.userId;
   try {
-    const targetPlaylist = await Playlist.findOne({
-      _id: id,
-      userId: userId,
-    }).populate("tracks");
-    if (!targetPlaylist) {
+    const updatedPlaylist = await Playlist.findOneAndUpdate(
+      { _id: id, userId },
+      {
+        $pull: { tracks: { track: trackId } },
+        $inc: { trackCount: -1 },
+      },
+      { new: true, runValidators: true },
+    ).populate("tracks.track");
+
+    if (!updatedPlaylist) {
       return next(new AppError("Playlist not found", 404));
     }
-    const keyPairs = targetPlaylist.tracks.map((track) => [
-      track._id.toString(),
-      track,
-    ]);
-    const tracksMap = new Map(keyPairs);
-    tracksMap.delete(trackId);
-    const updatedTracks = Array.from(tracksMap.keys());
-    const updatedPlaylist = await Playlist.updateOne(
-      { _id: id },
-      {
-        $set: { tracks: updatedTracks },
-      },
-    );
+
+    sortTracks(updatedPlaylist);
+
     res.json({ message: "Track removed successfully", updatedPlaylist });
   } catch (error) {
     console.error("Failed to remove track from playlist: ", error.message);
@@ -303,9 +315,14 @@ async function removeTracksFromPlaylist(req, res, next) {
 
     const updatedPlaylist = await Playlist.findOneAndUpdate(
       { _id: id, userId },
-      { $pullAll: { tracks: trackIds } },
+      {
+        $pull: { tracks: { track: { $in: trackIds } } },
+        $inc: { trackCount: -trackIds.length },
+      },
       { new: true, runValidators: true },
-    ).populate("tracks");
+    ).populate("tracks.track");
+
+    sortTracks(updatedPlaylist);
 
     return res.status(200).json({
       message: `${trackIds.length} track(s) removed from playlist.`,
@@ -363,9 +380,11 @@ async function searchPlaylists(req, res, next) {
       userId,
       title: { $regex: q.trim(), $options: "i" },
     })
-      .populate("tracks")
+      .populate("tracks.track")
       .sort({ createdAt: -1 })
       .limit(20);
+
+    sortTracks(playlists);
 
     return res.status(200).json(playlists);
   } catch (error) {

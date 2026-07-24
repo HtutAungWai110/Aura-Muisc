@@ -1,19 +1,36 @@
 import mongoose from "mongoose";
 
-const Playlist = mongoose.model(
-  "Playlist",
-  new mongoose.Schema({
+const playlistItemSchema = new mongoose.Schema(
+  {
+    track: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Track",
+      required: true,
+    },
+    addedAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  { _id: false },
+);
+
+const playlistSchema = new mongoose.Schema(
+  {
     title: { type: String, required: true },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
+      index: true,
     },
-    existCount: { type: Number, default: 0 },
-    tracks: [{ type: mongoose.Schema.Types.ObjectId, ref: "Track" }],
-    createdAt: { type: Date, default: Date.now() },
+    trackCount: { type: Number, default: 0 },
+    tracks: [playlistItemSchema],
     coverPhotoUrl: { type: String, default: null },
-  }),
+  },
+  { timestamps: true },
 );
+
+const Playlist = mongoose.model("Playlist", playlistSchema);
 
 export default Playlist;
