@@ -164,7 +164,7 @@ export default function TracksWrapper({
 
       {/* Tracks List */}
       <div className="flex flex-col mt-2">
-        {sort(tracks).map((track, index) => (
+        {tracks.map((track, index) => (
           <TrackTemplate
             key={track._id}
             track={track}
