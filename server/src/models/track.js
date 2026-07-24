@@ -13,8 +13,9 @@ const trackSchema = new mongoose.Schema(
     },
     thumbnailUrl: { type: String, default: null },
     duration: { type: Number, default: null },
+    addedAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now },
   },
-  { timestamps: true },
 );
 
 trackSchema.post("findOneAndDelete", async function (doc) {

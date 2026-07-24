@@ -21,6 +21,7 @@ export default function PlaylistPage() {
 
   const queryClient = useQueryClient();
 
+
   useEffect(() => {
     if (initialData && id) {
       queryClient.setQueryData([`Playlist ${id}`], initialData);
@@ -43,6 +44,7 @@ export default function PlaylistPage() {
     refetchOnMount: true,
     initialData: initialData,
   });
+
 
   const handleOpenMenu = (event: MouseEvent) => {
     setAnchorEl(event.currentTarget as HTMLElement);

@@ -58,9 +58,9 @@ async function getAllPlaylists(req, res, next) {
     const playlists = await Playlist.find({ userId })
       .populate("tracks.track")
       .sort({ createdAt: -1 })
-      .limit(pageSize * pageNumber);
+      .limit(pageSize * pageNumber)
+      .lean();
 
-    sortTracks(playlists);
 
     return res.status(200).json({ totalPage, playlists });
   } catch (error) {
@@ -82,13 +82,12 @@ async function getPlaylist(req, res, next) {
     const playlist = await Playlist.findOne({
       _id: id,
       userId: userId,
-    }).populate("tracks.track");
+    }).populate("tracks.track").lean();
 
     if (!playlist) {
       next(new AppError("Playlist not found.", 404));
     }
 
-    sortTracks(playlist);
 
     return res.status(200).json(playlist);
   } catch (error) {
@@ -322,8 +321,6 @@ async function removeTracksFromPlaylist(req, res, next) {
       { new: true, runValidators: true },
     ).populate("tracks.track");
 
-    sortTracks(updatedPlaylist);
-
     return res.status(200).json({
       message: `${trackIds.length} track(s) removed from playlist.`,
       updatedPlaylist,
@@ -382,9 +379,8 @@ async function searchPlaylists(req, res, next) {
     })
       .populate("tracks.track")
       .sort({ createdAt: -1 })
-      .limit(20);
-
-    sortTracks(playlists);
+      .limit(20)
+      .lean();
 
     return res.status(200).json(playlists);
   } catch (error) {

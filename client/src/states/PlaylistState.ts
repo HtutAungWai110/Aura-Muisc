@@ -90,11 +90,12 @@ export const usePlaylistStore = create<PlaylistStore>((set, get) => ({
       track: payload,
       addedAt: new Date().toISOString(),
     };
-    const updatedPlaylists = playlists.map((p) => {
+    const updatedPlaylists = playlists.map((p: Playlist) => {
       if (p._id === id) {
         return {
           ...p,
-          tracks: [newItem,...p.tracks ],
+          tracks: [newItem, ...p.tracks],
+          trackCount: p.trackCount + 1,
         };
       }
       return p;
@@ -110,6 +111,7 @@ export const usePlaylistStore = create<PlaylistStore>((set, get) => ({
           tracks: p.tracks.filter(
             (item: PlaylistItem) => item.track._id !== trackId,
           ),
+          trackCount: p.trackCount - 1,
         };
       }
       return p;
@@ -133,6 +135,7 @@ export const usePlaylistStore = create<PlaylistStore>((set, get) => ({
         tracks: p.tracks.filter(
           (item: PlaylistItem) => item.track._id !== trackId,
         ),
+        trackCount: p.trackCount - 1,
       };
     });
     set({ playlists: updatedPlaylists });

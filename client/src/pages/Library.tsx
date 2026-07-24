@@ -14,6 +14,7 @@ export default function Library() {
     queryKey: ["Tracks"],
     queryFn: async () => {
       const res = await apiClient.get("/api/track/all");
+      console.log(res.data)
       return res.data;
     },
     retryOnMount: false,

@@ -51,7 +51,6 @@ export default function TrackOptionsMenu({
       removeTrackAfterDelete(track._id);
       // setTracksCount(-1);
       if (playlistId) {
-        queryClient.invalidateQueries({ queryKey: [`Playlist ${playlistId}`] });
         removeTrack(playlistId, track._id);
       }
       setIsOpen(false);
